@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
                         SHA256(block_header, 80, block_hash1);
                         SHA256(block_hash1, 32, block_hash2);
                        
-                        unsigned int check = *((uint32_t *)(block_hash2 + 28)); // The hash is in little-endian, so we check the last 4 bytes.
+                        unsigned int check = *((uint16_t *)(block_hash2 + 30)); // The hash is in little-endian, so we check the last 2 bytes.
                         if(check == 0) // \x00\x00\x00\x00
                         {
                                 byteswap(block_hash2, 32);
