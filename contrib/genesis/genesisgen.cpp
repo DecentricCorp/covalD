@@ -281,7 +281,8 @@ int main(int argc, char *argv[])
         char *merkleHashSwapped = bin2hex(transaction->merkleHash, 32);
         char *txScriptSig = bin2hex(transaction->scriptSig, scriptSig_len);
         char *pubScriptSig = bin2hex(transaction->pubkeyScript, pubkeyScript_len);
-        printf("\nCoinbase: %s\n\nPubkeyScript: %s\n\nMerkle Hash: %s\nByteswapped: %s\n",txScriptSig, pubScriptSig, merkleHash, merkleHashSwapped);
+        //printf("\nCoinbase: %s\n\nPubkeyScript: %s\n\nMerkle Hash: %s\nByteswapped: %s\n",txScriptSig, pubScriptSig, merkleHash, merkleHashSwapped);
+        printf("\nCoinbase: %s\n\nPubkeyScript: %s\n\nMerkle Hash: %s\n",txScriptSig, pubScriptSig, merkleHashSwapped);
        
         //if(generateBlock)
         {
@@ -314,7 +315,7 @@ int main(int argc, char *argv[])
                         {
                                 byteswap(block_hash2, 32);
                                 char *blockHash = bin2hex(block_hash2, 32);
-                                printf("\nBlock found!\nHash: %s\nNonce: %u\nUnix time: %u", blockHash, startNonce, unixtime);
+                                printf("\nBlock found!\nHash: %s\nNonce: %u\nUnix time: %u\n", blockHash, startNonce, unixtime);
                                 free(blockHash);
                                 break;
                         }
