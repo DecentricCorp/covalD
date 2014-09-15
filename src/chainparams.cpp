@@ -137,20 +137,20 @@ public:
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
-        txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
+        genesis.nVersion = 1;
+        genesis.nTime    = 1410795409;
+        genesis.nBits    = 0x200000ff; // 16 bits of leading zeros in PoW
+        genesis.nNonce   = 23657;
+        txNew.vin[0].scriptSig = CScript() << genesis.nBits << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 50 * COIN;
-        txNew.vout[0].scriptPubKey = CScript() << ParseHex("041e6235273bf7bbfafc6083b737714d8914449339026b26cf0455083104fcb8350c1906f2fd4c63837e2852321af39b9119708ce5f2ba0c0291c40f75d11e5994") << OP_CHECKSIG;
+        txNew.vout[0].scriptPubKey = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
         genesis.vtx.push_back(txNew);
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
-        genesis.nVersion = 1;
-        genesis.nTime    = 1410553999;
-        genesis.nBits    = 0x1d00ffff; // = 486604799
-        genesis.nNonce   = 911;
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x00004b39b0e83efe6c2e5e7e812f9c1cf8ed7a5945728f49e62c02102b2c6994"));
-        assert(genesis.hashMerkleRoot == uint256("0x61a52ebed8d2eb69a6991a7ebdda5c549a4063b80f29f66e9a4bb02ec5331a41"));
+        assert(hashGenesisBlock == uint256("0x00005eecec0458b4493176574d870e73ec5a33a885b869de2d44b6514a280465"));
+        assert(genesis.hashMerkleRoot == uint256("0x8c2e027b9e0cb806ba4b7346fb7e6a8072e06049f6352ffc5e50df40e1b336c8"));
 
         vSeeds.push_back(CDNSSeedData("ribbitcoin.org", "seed.ribbitcoin.org"));
 
@@ -206,10 +206,10 @@ public:
         nTargetSpacing = 10 * 60;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
-        genesis.nTime = 1410554353;
-        genesis.nNonce = 19878;
+        genesis.nTime = 1410795926;
+        genesis.nNonce = 52717;
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x0000d466eeefed8af58140d645a03814a881876610d05b49cdcb134e16759363"));
+        assert(hashGenesisBlock == uint256("0x0000e80f6ba2da2d801a3ce187388d2200c86f85e07178dcea25772f872576f1"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -258,13 +258,12 @@ public:
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
         bnProofOfWorkLimit = ~uint256(0) >> 1;
-        genesis.nTime = 1410554835;
-        genesis.nBits = 0x207fffff;
-        genesis.nNonce = 134434;
+        genesis.nTime = 1410796073;
+        genesis.nBits    = 0x200000ff;
+        genesis.nNonce = 118720;
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 18444;
-        cout << "BOB regtest genesis block hash: " << hashGenesisBlock.GetHex() << endl;
-        assert(hashGenesisBlock == uint256("0x869b6788c11d792c1307524c218d6d9d9a2c5ee7dcbd19a069374dd507b22e33"));
+        assert(hashGenesisBlock == uint256("0x000050a44b755ac07529198a68802f1b6ae14bd8f55436ad56e6064a834517ae"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
