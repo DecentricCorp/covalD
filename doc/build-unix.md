@@ -17,7 +17,7 @@ To Build
 
 ```bash
 ./autogen.sh
-./configure
+./configure --with-gui=qt5 --with-incompatible-bdb
 make
 make install # optional
 ```
