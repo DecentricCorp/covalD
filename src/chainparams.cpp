@@ -167,7 +167,7 @@ public:
         fDefaultCheckMemPool = false;
         fAllowMinDifficultyBlocks = false;
         fRequireStandard = true;
-        fMineBlocksOnDemand = true;
+        fMineBlocksOnDemand = false;
         fSkipProofOfWorkCheck = false;
         fTestnetToBeDeprecatedFieldRPC = false;
     }
