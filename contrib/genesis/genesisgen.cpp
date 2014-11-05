@@ -138,11 +138,11 @@ int main(int argc, char *argv[])
         unsigned char hash1[32], hash2[32];
         char timestamp[255], pubkey[132];
         uint32_t timestamp_len = 0, scriptSig_len = 0, pubkey_len = 0, pubkeyScript_len = 0;
-        uint32_t nBits = 0;
+        uint32_t nBits = 0x1d00ffff;
        
-        if((argc-1) < 3)
+        if((argc-1) < 2)
         {
-                fprintf(stderr, "Usage: genesisgen [options] <pubkey> \"<timestamp>\" <nBits>\n");
+                fprintf(stderr, "Usage: genesisgen [options] <pubkey> \"<timestamp>\" [nBits]\n");
                 return 0;              
         }
        
@@ -170,7 +170,8 @@ int main(int argc, char *argv[])
        
         strncpy(pubkey, argv[1], sizeof(pubkey));
         strncpy(timestamp, argv[2], sizeof(timestamp));
-        sscanf(argv[3], "%lu", (long unsigned int *)&nBits);
+        if(argc >= 4) 
+            sscanf(argv[3], "%lu", (long unsigned int *)&nBits);
         fprintf(stderr, "nBits = %d (0x%x)", nBits, nBits);
        
         pubkey_len = strlen(pubkey) >> 1;
