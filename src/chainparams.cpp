@@ -108,8 +108,8 @@ public:
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
         nMinerThreads = 1;
-        nTargetTimespan = 14 * 24 * 60 * 60; // two weeks
-        nTargetSpacing = 30; //10 * 60;
+        nTargetTimespan = 24 * 60 * 60; // daily difficulty retarget
+        nTargetSpacing = 1 * 60; // 1 minute blocks
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
@@ -126,9 +126,9 @@ public:
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         genesis.nVersion = 1;
-        genesis.nTime    = 1410795409;
+        genesis.nTime    = 1415202843;
         genesis.nBits    = 0x200000ff; // 16 bits of leading zeros in PoW
-        genesis.nNonce   = 23657;
+        genesis.nNonce   = 702617365;
         txNew.vin[0].scriptSig = CScript() << genesis.nBits << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 50 * COIN;
         txNew.vout[0].scriptPubKey = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
@@ -137,8 +137,8 @@ public:
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x00005eecec0458b4493176574d870e73ec5a33a885b869de2d44b6514a280465"));
-        assert(genesis.hashMerkleRoot == uint256("0x8c2e027b9e0cb806ba4b7346fb7e6a8072e06049f6352ffc5e50df40e1b336c8"));
+        assert(hashGenesisBlock == uint256("0x00000000f9719689712813313d08c079695ad29643efa521bce5162b39a8e1a8"));
+        assert(genesis.hashMerkleRoot == uint256("0x0d912aef94f022a4d945cb3ca80fd606008c8696f9f9bbb3a9eea2671332a406"));
 
         vSeeds.push_back(CDNSSeedData("ribbitcoin.org", "seed.ribbitcoin.org"));
 
