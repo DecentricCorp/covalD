@@ -12,6 +12,7 @@
 #include "main.h"
 #include "net.h"
 #include "pow.h"
+#include "auxpow.h"
 #include "timedata.h"
 #include "random.h"
 #include "util.h"
@@ -453,8 +454,7 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 {
     LogPrintf("%s\n", pblock->ToString());
     LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
-    int algo = pblock->GetAlgo();
-    uint256 hashPoW = pblock->GetHash(algo);
+    uint256 hashPoW = pblock->GetHash();
     uint256 hashTarget = uint256().SetCompact(pblock->nBits);
 
     if (hashPoW > hashTarget)

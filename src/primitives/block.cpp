@@ -10,10 +10,14 @@
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 
-uint256 CBlockHeader::GetHash(int algo) const
+int GetOurChainID()
 {
-    if(algo == -1) algo = GetAlgo();
-    switch (algo)
+    return 0xf6;
+}
+
+uint256 CBlockHeader::GetHash() const
+{
+    switch (GetAlgo())
     {
         case ALGO_SHA256D:
             return Hash(BEGIN(nVersion), END(nNonce));
