@@ -140,7 +140,7 @@ public:
         assert(hashGenesisBlock == uint256("0x00000000b2c8fc5991e8c92c73ff66825827c6dd740217234541699ec5dc3677"));
         assert(genesis.hashMerkleRoot == uint256("0x8ccdb8815b08653bef4677df85a2ac2280a45efb804b9c74c077ed0417f8e8f1"));
 
-        vSeeds.push_back(CDNSSeedData("ribbitcoin.org", "seed.ribbitcoin.org"));
+        vSeeds.push_back(CDNSSeedData("ribbitcoin.org", "ribbitcoin.org"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
@@ -202,7 +202,7 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("ribbitcoin.org", "seed.ribbitcoin.org"));
+        vSeeds.push_back(CDNSSeedData("ribbitcoin.org", "ribbitcoin.org"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(65); // Starts with T
         base58Prefixes[SCRIPT_ADDRESS] = list_of(127); // Starts with t
