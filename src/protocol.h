@@ -106,7 +106,7 @@ public:
     uint64_t nServices;
 
     // disk and network only
-    unsigned int nTime;
+    uint64_t nTime;
 
     // memory only
     int64_t nLastTry;

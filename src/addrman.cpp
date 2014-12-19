@@ -43,7 +43,7 @@ bool CAddrInfo::IsTerrible(int64_t nNow) const
     if (nLastTry && nLastTry >= nNow - 60) // never remove things tried in the last minute
         return false;
 
-    if (nTime > nNow + 10 * 60) // came in a flying DeLorean
+    if (nTime > nNow + 10 * 60 * 1000000ul) // came in a flying DeLorean
         return true;
 
     if (nTime == 0 || nNow - nTime > ADDRMAN_HORIZON_DAYS * 24 * 60 * 60) // not seen in recent history
@@ -313,10 +313,10 @@ bool CAddrMan::Add_(const CAddress& addr, const CNetAddr& source, int64_t nTimeP
 
     if (pinfo) {
         // periodically update nTime
-        bool fCurrentlyOnline = (GetAdjustedTime() - addr.nTime < 24 * 60 * 60);
-        int64_t nUpdateInterval = (fCurrentlyOnline ? 60 * 60 : 24 * 60 * 60);
+        bool fCurrentlyOnline = (GetAdjustedTime() - addr.nTime < 24 * 60 * 60 * 1000000l);
+        int64_t nUpdateInterval = (fCurrentlyOnline ? 60 * 60 : 24 * 60 * 60 * 1000000l);
         if (addr.nTime && (!pinfo->nTime || pinfo->nTime < addr.nTime - nUpdateInterval - nTimePenalty))
-            pinfo->nTime = max((int64_t)0, addr.nTime - nTimePenalty);
+            pinfo->nTime = max((uint64_t)0, addr.nTime - nTimePenalty);
 
         // add services
         pinfo->nServices |= addr.nServices;
@@ -523,7 +523,7 @@ void CAddrMan::Connected_(const CService& addr, int64_t nTime)
         return;
 
     // update info
-    int64_t nUpdateInterval = 20 * 60;
+    uint64_t nUpdateInterval = 20 * 60 * 1000000l;
     if (nTime - info.nTime > nUpdateInterval)
         info.nTime = nTime;
 }

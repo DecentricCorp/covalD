@@ -15,7 +15,7 @@
 using namespace std;
 
 static CCriticalSection cs_nTimeOffset;
-static int64_t nTimeOffset = 0;
+static int64_t nTimeOffset = 0; // in microseconds
 
 /**
  * "Never go to sea with two chronometers; take one or three."
@@ -32,12 +32,7 @@ int64_t GetTimeOffset()
 
 int64_t GetAdjustedTime()
 {
-    return GetTime() + GetTimeOffset();
-}
-
-static int64_t abs64(int64_t n)
-{
-    return (n >= 0 ? n : -n);
+    return GetTimeMicros() + GetTimeOffset();
 }
 
 void AddTimeData(const CNetAddr& ip, int64_t nOffsetSample)
@@ -51,7 +46,7 @@ void AddTimeData(const CNetAddr& ip, int64_t nOffsetSample)
     // Add data
     static CMedianFilter<int64_t> vTimeOffsets(200,0);
     vTimeOffsets.input(nOffsetSample);
-    LogPrintf("Added time data, samples %d, offset %+d (%+d minutes)\n", vTimeOffsets.size(), nOffsetSample, nOffsetSample/60);
+    LogPrintf("Added time data, samples %d, offset %+d (%+f seconds)\n", vTimeOffsets.size(), nOffsetSample, nOffsetSample/1000000.0);
 
     // There is a known issue here (see issue #4521):
     //
@@ -75,7 +70,7 @@ void AddTimeData(const CNetAddr& ip, int64_t nOffsetSample)
         int64_t nMedian = vTimeOffsets.median();
         std::vector<int64_t> vSorted = vTimeOffsets.sorted();
         // Only let other nodes change our time by so much
-        if (abs64(nMedian) < 70 * 60)
+        if (abs(nMedian) < 70 * 60 * 1000000l)
         {
             nTimeOffset = nMedian;
         }
@@ -89,7 +84,7 @@ void AddTimeData(const CNetAddr& ip, int64_t nOffsetSample)
                 // If nobody has a time different than ours but within 5 minutes of ours, give a warning
                 bool fMatch = false;
                 BOOST_FOREACH(int64_t nOffset, vSorted)
-                    if (nOffset != 0 && abs64(nOffset) < 5 * 60)
+                    if (nOffset != 0 && abs(nOffset) < 5 * 60 * 1000000l)
                         fMatch = true;
 
                 if (!fMatch)
@@ -107,6 +102,6 @@ void AddTimeData(const CNetAddr& ip, int64_t nOffsetSample)
                 LogPrintf("%+d  ", n);
             LogPrintf("|  ");
         }
-        LogPrintf("nTimeOffset = %+d  (%+d minutes)\n", nTimeOffset, nTimeOffset/60);
+        LogPrintf("nTimeOffset = %+d  (%+f seconds)\n", nTimeOffset, nTimeOffset/1000000.0);
     }
 }

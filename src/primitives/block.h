@@ -69,7 +69,7 @@ public:
 
     int64_t GetBlockTime() const
     {
-        return (int64_t)nTime;
+        return (int64_t)nTime*1000000l;
     }
 };
 
