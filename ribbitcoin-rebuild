@@ -1,0 +1,4 @@
+make 
+ ribbitcoin-cli stop 
+sleep 5 
+./src/ribbitcoind 

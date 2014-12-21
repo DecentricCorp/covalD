@@ -12,6 +12,7 @@
 #include "checkqueue.h"
 #include "init.h"
 #include "merkleblock.h"
+#include "interest.h"
 #include "net.h"
 #include "pow.h"
 #include "txdb.h"
@@ -1365,6 +1366,18 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
     inputs.ModifyCoins(tx.GetHash())->FromTx(tx, nHeight);
 }
 
+CAmount ComputeInterest(int periods, const CTxOut& txOut)
+{
+    double APY = 0.05;
+    CAmount interest = 0;
+    double rate = exp(log(1+APY)/periods) - 1;
+
+//amount = principle * pow(1.0 + APY/ T, T);
+    interest = txOut.nValue * pow(1.0+rate, periods);
+
+    return interest;
+}
+
 bool CScriptCheck::operator()() {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
     if (!VerifyScript(scriptSig, scriptPubKey, nFlags, CachingSignatureChecker(*ptxTo, nIn, cacheStore), &error)) {
@@ -1406,7 +1419,12 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
             }
 
             // Check for negative or overflow input values
-            nValueIn += coins->vout[prevout.n].nValue;
+            const CTxOut spendTx = coins->vout[prevout.n];
+            const CAmount txOutInterest = ComputeInterest((nSpendHeight - coins->nHeight), spendTx);
+           
+            error("TK: Interest is: %s", txOutInterest);
+	    error("Appears in %d, currently: %d", coins->nHeight, nSpendHeight);
+            nValueIn += spendTx.nValue;
             if (!MoneyRange(coins->vout[prevout.n].nValue) || !MoneyRange(nValueIn))
                 return state.DoS(100, error("CheckInputs() : txin values out of range"),
                                  REJECT_INVALID, "bad-txns-inputvalues-outofrange");
