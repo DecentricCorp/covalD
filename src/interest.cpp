@@ -1,9 +1,20 @@
-
-CAmount ComputeInterest(CTxOut& txOut, periods)
+CInterest::ComputeInterest(int nPeriods, const CTxOut& txOut):
 {
-   float rate = 0.05;
-   CAmount interest = txOut.nValue * pow((1 + rate), periods);
-   return interest;
-   
+    double APY = 0.05;
+    double rate = exp(log(1+APY)/nPeriods) - 1;
+    CAmount interest = txOut.nValue * pow(1.0+rate, nPeriods) - txOut.nValue;
+    return interest;
 }
+
+//        CAmount ComputeInterest(int periods, const uint256 txHash)
+//        {
+//            // do blockchain lookup here
+//
+//            double APY = 0.05;
+//            double rate = exp(log(1+APY)/periods) - 1;
+//            CAmount interest = txOut.nValue * pow(1.0+rate, periods);
+//            return interest;
+//        }
+
+};
 

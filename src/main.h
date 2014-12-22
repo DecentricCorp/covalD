@@ -26,6 +26,7 @@
 #include "txmempool.h"
 #include "uint256.h"
 #include "undo.h"
+#include "interest.h"
 
 #include <algorithm>
 #include <exception>

@@ -12,7 +12,6 @@
 #include "checkqueue.h"
 #include "init.h"
 #include "merkleblock.h"
-#include "interest.h"
 #include "net.h"
 #include "pow.h"
 #include "txdb.h"
@@ -1404,6 +1403,8 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
         int nSpendHeight = pindexPrev->nHeight + 1;
         CAmount nValueIn = 0;
         CAmount nFees = 0;
+
+        error("TK: CheckInputs() for %s", tx.GetHash().ToString());
         for (unsigned int i = 0; i < tx.vin.size(); i++)
         {
             const COutPoint &prevout = tx.vin[i].prevout;
@@ -1420,21 +1421,26 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
 
             // Check for negative or overflow input values
             const CTxOut spendTx = coins->vout[prevout.n];
-            const CAmount txOutInterest = ComputeInterest((nSpendHeight - coins->nHeight), spendTx);
-           
-            error("TK: Interest is: %s", txOutInterest);
-	    error("Appears in %d, currently: %d", coins->nHeight, nSpendHeight);
-            nValueIn += spendTx.nValue;
-            if (!MoneyRange(coins->vout[prevout.n].nValue) || !MoneyRange(nValueIn))
+            CAmount txOutInterest = CInterest::ComputeInterest((nSpendHeight - coins->nHeight + 1), spendTx);
+            CAmount txOutValue = spendTx.nValue + txOutInterest;
+
+	    error("   TK: Input %d", i);
+            error("       txOut.nValue: %d", spendTx.nValue);
+	    error("       Compounding periods: %d", (nSpendHeight - coins->nHeight));
+            error("       Interest is: %s", txOutInterest);
+            error("       Redeemable: %d", txOutValue);
+
+            nValueIn += txOutValue;
+            if (!MoneyRange(spendTx.nValue) || !MoneyRange(nValueIn))
                 return state.DoS(100, error("CheckInputs() : txin values out of range"),
                                  REJECT_INVALID, "bad-txns-inputvalues-outofrange");
 
         }
 
         if (nValueIn < tx.GetValueOut())
-            return state.DoS(100, error("CheckInputs() : %s value in (%s) < value out (%s)",
+            return state.DoS(100, error("BASIS: CheckInputs() : %s value in (%s) < value out (%s)",
                                         tx.GetHash().ToString(), FormatMoney(nValueIn), FormatMoney(tx.GetValueOut())),
-                             REJECT_INVALID, "bad-txns-in-belowout");
+                             REJECT_INVALID, "BASIS: bad-txns-in-belowout");
 
         // Tally transaction fees
         CAmount nTxFee = nValueIn - tx.GetValueOut();
