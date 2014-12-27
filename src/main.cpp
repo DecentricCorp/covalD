@@ -1365,17 +1365,6 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
     inputs.ModifyCoins(tx.GetHash())->FromTx(tx, nHeight);
 }
 
-CAmount ComputeInterest(int periods, const CTxOut& txOut)
-{
-    double APY = 0.05;
-    CAmount interest = 0;
-    double rate = exp(log(1+APY)/periods) - 1;
-
-//amount = principle * pow(1.0 + APY/ T, T);
-    interest = txOut.nValue * pow(1.0+rate, periods);
-
-    return interest;
-}
 
 bool CScriptCheck::operator()() {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
@@ -1421,8 +1410,8 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
 
             // Check for negative or overflow input values
             const CTxOut spendTx = coins->vout[prevout.n];
-            CAmount txOutInterest = CInterest::ComputeInterest((nSpendHeight - coins->nHeight + 1), spendTx);
-            CAmount txOutValue = spendTx.nValue + txOutInterest;
+            CAmount txOutInterest = ComputeInterest((nSpendHeight - coins->nHeight + 1), spendTx);
+            CAmount txOutValue = spendTx.nValue;// + txOutInterest;
 
 	    error("   TK: Input %d", i);
             error("       txOut.nValue: %d", spendTx.nValue);
