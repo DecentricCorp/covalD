@@ -111,6 +111,9 @@ public:
         nTargetTimespan = 24 * 60 * 60; // daily difficulty retarget
         nTargetSpacing = 1 * 60; // 1 minute blocks
 
+		// Blockreward stuff
+		nPremine = 500000000;
+
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
          * be spent as it did not originally exist in the database.
@@ -192,7 +195,8 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
-
+		// Blockreward stuff
+		nPremine = 500000000;
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime    = 1415208967;
         genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
@@ -246,6 +250,9 @@ public:
         nMinerThreads = 1;
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
+		// Blockreward stuff
+		nPremine = 500000000;
+		
         bnProofOfWorkLimit = ~uint256(0) >> 1;
         genesis.nTime    = 1415208967;
         genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
