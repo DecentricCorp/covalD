@@ -5,7 +5,7 @@
 //extern CChain chainActive;
 
 CAmount ComputeInterest(int periods, const CTxOut& txOut);
-CAmount ComputeInterest(const uint256& periods, std::vector<CTxOut>::const_iterator& txOut);
+CAmount ComputeInterest(const uint256& periods, const CTxOut txOut);
 /*
 class CInterest
 {

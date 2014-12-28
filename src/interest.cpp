@@ -1,5 +1,7 @@
 #include <interest.h>
 #include "util.h"
+#include "main.h" 
+
 CAmount ComputeInterest(int periods, const CTxOut& txOut)
 {
    // do blockchain lookup here
@@ -10,7 +12,7 @@ CAmount ComputeInterest(int periods, const CTxOut& txOut)
 }
 
 
-        CAmount ComputeInterest(uint256& txHash, const CTxOut& txOut) 
+        CAmount ComputeInterest(const uint256& txHash, const CTxOut txOut) 
         {
             CTransaction transaction;
             uint256 hashBlock;
@@ -21,4 +23,4 @@ CAmount ComputeInterest(int periods, const CTxOut& txOut)
             CBlockIndex* spendBlockIndex = mapBlockIndex[hashBlock];
             int periods = chainActive.Height() - spendBlockIndex->nHeight + 1;
             return ComputeInterest(periods, txOut);
-        }  
+        }
