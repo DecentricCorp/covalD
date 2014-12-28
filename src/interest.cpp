@@ -12,15 +12,18 @@ CAmount ComputeInterest(int periods, const CTxOut& txOut)
 }
 
 
-        CAmount ComputeInterest(const uint256& txHash, const CTxOut txOut) 
+        CAmount ComputeInterest(const uint256& txHash, const CTxOut& txOut) 
         {
             CTransaction transaction;
             uint256 hashBlock;
-            if (!GetTransaction(txHash, transaction, hashBlock)) {
+            if (!GetTransaction(txHash, transaction, hashBlock, true)) {
                // throw error
             }
 
             CBlockIndex* spendBlockIndex = mapBlockIndex[hashBlock];
+            if(spendBlockIndex == NULL) {
+                // throw error
+            }
             int periods = chainActive.Height() - spendBlockIndex->nHeight + 1;
             return ComputeInterest(periods, txOut);
         }
