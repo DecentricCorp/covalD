@@ -112,7 +112,7 @@ public:
         nTargetSpacing = 1 * 60; // 1 minute blocks
 
 		// Blockreward stuff
-		nPremine = 500000000;
+		nPremine = 400000000;
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot

@@ -1198,6 +1198,10 @@ CAmount GetBlockValue(int nHeight, const CAmount& nFees)
 		//set the block reward to the premine
 		nSubsidy = Params().Premine() * COIN;
 	}
+	
+	if(nHeight > 1 && nHeight < 10080){
+		nSubsidy = 0;
+	}
 	// later adjust the reward based on minted coins
 
     return nSubsidy + nFees;
