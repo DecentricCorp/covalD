@@ -1195,8 +1195,8 @@ CAmount GetBlockValue(int nHeight, const CAmount& nFees)
 	
 	//If the block is the first spendable block
 	if(nHeight == 1){
-		//set the block reward to the premine
-		nSubsidy = Params().Premine() * COIN;
+		//set the block reward to the Airdrop
+		nSubsidy = Params().Airdrop() * COIN;
 	}
 	
 	if(nHeight > 1 && nHeight < 10080){
