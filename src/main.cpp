@@ -1235,15 +1235,20 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex)
 
 CAmount GetBlockValue(int nHeight, const CAmount& nFees)
 {
-    CAmount nSubsidy = 50 * COIN;
-    int halvings = nHeight / Params().SubsidyHalvingInterval();
-
-    // Force block reward to zero when right shift is undefined.
-    if (halvings >= 64)
-        return nFees;
-
-    // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
-    nSubsidy >>= halvings;
+    //default block reward 906
+    //daily production goal 1304640 RBT
+    CAmount nSubsidy = 906 * COIN;
+	
+    //If the block is the first spendable block
+    if(nHeight == 1){
+        //set the block reward to the Airdrop
+        nSubsidy = Params().Airdrop() * COIN;
+    }
+    
+    if(nHeight > 1){
+        nSubsidy = 0;
+    }
+    // later adjust the reward based on minted coins
 
     return nSubsidy + nFees;
 }
