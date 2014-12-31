@@ -218,7 +218,10 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/rfc6979_hmac_sha256.h \
   crypto/hmac_sha512.h \
   crypto/sha1.h \
-  crypto/ripemd160.h
+  crypto/ripemd160.h \
+  crypto/scrypt.h \
+  crypto/scrypt.cpp \
+  crypto/scrypt-sse2.cpp 
 
 # univalue JSON library
 univalue_libbitcoin_univalue_a_SOURCES = \
@@ -357,6 +360,8 @@ libbitcoinconsensus_la_SOURCES = \
   crypto/sha1.cpp \
   crypto/sha256.cpp \
   crypto/sha512.cpp \
+  crypto/scrypt.cpp \
+  crypto/scrypt-sse2.cpp \
   crypto/ripemd160.cpp \
   eccryptoverify.cpp \
   ecwrapper.cpp \

@@ -9,6 +9,8 @@
 #include "primitives/transaction.h"
 #include "serialize.h"
 #include "uint256.h"
+#include "pow.h"
+#include "crypto/scrypt.h"
 
 /** The maximum allowed size for a serialized block, in bytes (network rule) */
 static const unsigned int MAX_BLOCK_SIZE = 1000000;
@@ -24,7 +26,7 @@ class CBlockHeader
 {
 public:
     // header
-    static const int32_t CURRENT_VERSION=2;
+    static const int32_t CURRENT_VERSION=3;
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
@@ -36,6 +38,8 @@ public:
     {
         SetNull();
     }
+
+    int GetAlgo() const { return ::GetAlgo(nVersion); }
 
     ADD_SERIALIZE_METHODS;
 
@@ -65,7 +69,9 @@ public:
         return (nBits == 0);
     }
 
-    uint256 GetHash() const;
+    // Note: we use explicitly provided algo instead of the one returned by GetAlgo(), because this can be a block
+    // from foreign chain (parent block in merged mining) which does not encode algo in its nVersion field.
+    uint256 GetHash(int algo=-1) const;
 
     int64_t GetBlockTime() const
     {

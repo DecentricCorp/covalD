@@ -66,6 +66,7 @@ src/qt/test/moc*.cpp
 
 *.json.h
 *.raw.h
+tags
 
 #libtool object files
 *.lo
