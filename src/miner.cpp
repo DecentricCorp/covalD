@@ -659,7 +659,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
 
     minerThreads = new boost::thread_group();
     for (int i = 0; i < nThreads; i++)
-        minerThreads->create_thread(boost::bind(&RibbitcoinMiner, pwallet, (i+1)%NUM_ALGOS));
+        minerThreads->create_thread(boost::bind(&RibbitcoinMiner, pwallet, (i+miningAlgo)%NUM_ALGOS));
 }
 
 #endif // ENABLE_WALLET
