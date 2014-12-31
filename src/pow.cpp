@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "pow.h"
+#include "chain.h"
 
 #include "chain.h"
 #include "chainparams.h"
@@ -11,63 +12,75 @@
 #include "uint256.h"
 #include "util.h"
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, 
+        const CBlockHeader *pblock)
 {
-    unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit().GetCompact();
+    int algo = pblock->GetAlgo();
+    unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
 
     // Genesis block
     if (pindexLast == NULL)
         return nProofOfWorkLimit;
 
-    // Only change once per interval
+    // If we're within one averaging interval, just return the work of the
+    // previous block using the same algorithm.
     if ((pindexLast->nHeight+1) % Params().Interval() != 0)
     {
+        const CBlockIndex* pindex = GetLastBlockIndex(pindexLast, algo);
+        if(pindex == NULL)
+            return nProofOfWorkLimit;
         if (Params().AllowMinDifficultyBlocks())
         {
             // Special difficulty rule for testnet:
             // If the new block's timestamp is more than 2* 10 minutes
             // then allow mining of a min-difficulty block.
-            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + Params().TargetSpacing()*2)
+            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + Params().TargetSpacing()*2*NUM_ALGOS)
                 return nProofOfWorkLimit;
             else
             {
                 // Return the last non-special-min-difficulty-rules-block
-                const CBlockIndex* pindex = pindexLast;
-                while (pindex->pprev && pindex->nHeight % Params().Interval() != 0 && pindex->nBits == nProofOfWorkLimit)
-                    pindex = pindex->pprev;
+                while (pindex && pindex->pprev && pindex->nHeight % Params().Interval() != 0 
+                        && pindex->nBits == nProofOfWorkLimit)
+                    pindex = GetLastBlockIndex(pindex->pprev, algo);
+                if(pindex == NULL)
+                    return nProofOfWorkLimit;
                 return pindex->nBits;
             }
         }
-        return pindexLast->nBits;
+        return pindex->nBits;
     }
 
-    // Go back by what we want to be 14 days worth of blocks
-    const CBlockIndex* pindexFirst = pindexLast;
-    for (int i = 0; pindexFirst && i < Params().Interval()-1; i++)
+    const CBlockIndex* pindexFirst = NULL;
+    pindexFirst = pindexLast;
+    for (int i = 0; pindexFirst && i < Params().Interval()- 1; i++)
+    {
         pindexFirst = pindexFirst->pprev;
-    assert(pindexFirst);
+        pindexFirst = GetLastBlockIndex(pindexFirst, algo);
+        if (pindexFirst == NULL) 
+            return nProofOfWorkLimit; // not nAveragingInterval blocks of this algo available
+    }
 
-    // Limit adjustment step
     int64_t nActualTimespan = pindexLast->GetBlockTime() - pindexFirst->GetBlockTime();
-    LogPrintf("  nActualTimespan = %d  before bounds\n", nActualTimespan);
-    if (nActualTimespan < Params().TargetTimespan()/4)
-        nActualTimespan = Params().TargetTimespan()/4;
-    if (nActualTimespan > Params().TargetTimespan()*4)
-        nActualTimespan = Params().TargetTimespan()*4;
 
     // Retarget
     uint256 bnNew;
     uint256 bnOld;
     bnNew.SetCompact(pindexLast->nBits);
     bnOld = bnNew;
-    bnNew *= nActualTimespan;
+    bnNew *= nActualTimespan/NUM_ALGOS;
     bnNew /= Params().TargetTimespan();
+    // FIXME should I use the median block time over an interval instead of the average?
+    // FIXME evaluate derivative and implement damping function
+    // FIXME Params().fDampingConstant should be roughly the half-life of decay
+    //       after an impulse
+    // FIXME make a vector of block times.
+    // FIXME make a vector of the derivatives by finite difference.
 
-    if (bnNew > Params().ProofOfWorkLimit())
-        bnNew = Params().ProofOfWorkLimit();
+    if (bnNew > Params().ProofOfWorkLimit(algo))
+        bnNew = Params().ProofOfWorkLimit(algo);
 
     /// debug print
-    LogPrintf("GetNextWorkRequired RETARGET\n");
+    LogPrintf("GetNextWorkRequired RETARGET for algo %s\n", GetAlgoName(algo));
     LogPrintf("Params().TargetTimespan() = %d    nActualTimespan = %d\n", Params().TargetTimespan(), nActualTimespan);
     LogPrintf("Before: %08x  %s\n", pindexLast->nBits, bnOld.ToString());
     LogPrintf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
@@ -75,7 +88,9 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     return bnNew.GetCompact();
 }
 
-bool CheckProofOfWork(uint256 hash, unsigned int nBits)
+// FIXME algo is only needed here for a minimum work block.
+// if all algos are treated the same with the same minimum limit...
+bool CheckProofOfWork(uint256 hash, unsigned int nBits, int algo)
 {
     bool fNegative;
     bool fOverflow;
@@ -87,12 +102,16 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits)
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 
     // Check range
-    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit())
-        return error("CheckProofOfWork() : nBits below minimum work");
+    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit(algo)) {
+        LogPrintf("CheckProofOfWork: \n");
+        LogPrintf("                        bnTaget = %s\n", bnTarget.GetHex());
+        LogPrintf("  Params().ProofOfWorkLimit(%s) = %s\n", GetAlgoName(algo), Params().ProofOfWorkLimit(algo).GetHex());
+        return error("CheckProofOfWork(algo=%d) : nBits below minimum work", algo);
+    }
 
     // Check proof of work matches claimed amount
     if (hash > bnTarget)
-        return error("CheckProofOfWork() : hash doesn't match nBits");
+        return error("CheckProofOfWork(algo=%s) : hash doesn't match nBits", GetAlgoName(algo));
 
     return true;
 }

@@ -6,11 +6,33 @@
 #include "primitives/block.h"
 
 #include "hash.h"
+#include "pow.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 
-uint256 CBlockHeader::GetHash() const
+uint256 CBlockHeader::GetHash(int algo) const
 {
+    if(algo == -1) algo = GetAlgo();
+    switch (algo)
+    {
+        case ALGO_SHA256D:
+            return Hash(BEGIN(nVersion), END(nNonce));
+        case ALGO_SCRYPT:
+        {
+            uint256 thash;
+            // Caution: scrypt_1024_1_1_256 assumes fixed length of 80 bytes
+            // so the input here takes 80 bytes starting at nVersion -- is
+            // dependent on binary structure of header
+            scrypt_1024_1_1_256((char*)&nVersion, (char*)thash.begin());
+            return thash;
+        }
+//            case ALGO_GROESTL:
+//                return HashGroestl(BEGIN(nVersion), END(nNonce));
+//            case ALGO_SKEIN:
+//                return HashSkein(BEGIN(nVersion), END(nNonce));
+//            case ALGO_QUBIT:
+//                return HashQubit(BEGIN(nVersion), END(nNonce));
+    }
     return Hash(BEGIN(nVersion), END(nNonce));
 }
 
