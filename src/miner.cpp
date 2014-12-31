@@ -13,6 +13,7 @@
 #include "net.h"
 #include "pow.h"
 #include "timedata.h"
+#include "random.h"
 #include "util.h"
 #include "utilmoneystr.h"
 #ifdef ENABLE_WALLET
@@ -26,7 +27,7 @@ using namespace std;
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// BitcoinMiner
+// RibbitcoinMiner
 //
 
 //
@@ -88,7 +89,7 @@ void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 }
 
-CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
+CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo)
 {
     // Create new block
     auto_ptr<CBlockTemplate> pblocktemplate(new CBlockTemplate());
@@ -101,6 +102,27 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     if (Params().MineBlocksOnDemand())
         pblock->nVersion = GetArg("-blockversion", pblock->nVersion);
 
+    pblock->nVersion = BLOCK_VERSION_DEFAULT;
+    switch (algo)
+    {
+        case ALGO_SHA256D:
+            break;
+        case ALGO_SCRYPT:
+            pblock->nVersion |= BLOCK_VERSION_SCRYPT;
+            break;
+//        case ALGO_GROESTL:
+//            pblock->nVersion |= BLOCK_VERSION_GROESTL;
+//            break;
+//        case ALGO_SKEIN:
+//            pblock->nVersion |= BLOCK_VERSION_SKEIN;
+//            break;
+//        case ALGO_QUBIT:
+//            pblock->nVersion |= BLOCK_VERSION_QUBIT;
+//            break;
+        default:
+            error("CreateNewBlock: bad algo");
+            return NULL;
+    }
     // Create coinbase tx
     CMutableTransaction txNew;
     txNew.vin.resize(1);
@@ -328,7 +350,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         // Fill in header
         pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
         UpdateTime(pblock, pindexPrev);
-        pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock);
+        pblock->nBits          = GetNextWorkRequired(GetLastBlockIndex(pindexPrev, algo), pblock);
         pblock->nNonce         = 0;
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
@@ -364,8 +386,8 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
 //
 // Internal miner
 //
-double dHashesPerSec = 0.0;
-int64_t nHPSTimerStart = 0;
+double dHashesPerSec[NUM_ALGOS];
+int64_t nHPSTimerStart[NUM_ALGOS];
 
 //
 // ScanHash scans nonces looking for a hash with at least some zero bits.
@@ -373,10 +395,13 @@ int64_t nHPSTimerStart = 0;
 // nonce is 0xffff0000 or above, the block is rebuilt and nNonce starts over at
 // zero.
 //
-bool static ScanHash(const CBlockHeader *pblock, uint32_t& nNonce, uint256 *phash)
+bool static ScanHash(const CBlockHeader *pblock, uint32_t& nNonce, uint256 *phash, int algo)
 {
     // Write the first 76 bytes of the block header to a double-SHA256 state.
-    CHash256 hasher;
+    // FIXME use inheritance here since all these fucking things have the same
+    // interface
+    char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
+    CHash256 hasher;  // CPoWHasher
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss << *pblock;
     assert(ss.size() == 80);
@@ -385,43 +410,77 @@ bool static ScanHash(const CBlockHeader *pblock, uint32_t& nNonce, uint256 *phas
     while (true) {
         nNonce++;
 
-        // Write the last 4 bytes of the block header (the nonce) to a copy of
-        // the double-SHA256 state, and compute the result.
-        CHash256(hasher).Write((unsigned char*)&nNonce, 4).Finalize((unsigned char*)phash);
-
-        // Return the nonce if the hash has at least some zero bits,
-        // caller will check if it has enough to reach the target
-        if (((uint16_t*)phash)[15] == 0)
-            return true;
-
-        // If nothing found after trying for a while, return -1
-        if ((nNonce & 0xffff) == 0)
-            return false;
-        if ((nNonce & 0xfff) == 0)
-            boost::this_thread::interruption_point();
+        switch(algo) {
+            case ALGO_SHA256D:
+                // Write the last 4 bytes of the block header (the nonce) to a copy of
+                // the double-SHA256 state, and compute the result.
+                CHash256(hasher).Write((unsigned char*)&nNonce, 4).Finalize((unsigned char*)phash);
+                // Return the nonce if the hash has at least some zero bits,
+                // caller will check if it has enough to reach the target
+                if ((((uint32_t*)phash)[7] & 0xfffff000) == 0)
+                    return true;
+                // If nothing found after trying for a while, return false (caller will retry)
+                if ((nNonce & 0xffff) == 0)
+                    return false;
+                if ((nNonce & 0xfff) == 0)
+                    boost::this_thread::interruption_point();
+                break;
+            case ALGO_SCRYPT:
+                ((CBlockHeader*)&ss[0])->nNonce = nNonce;
+#if defined(USE_SSE2)
+                // Detection would work, but in cases where we KNOW it always has SSE2,
+                // it is faster to use directly than to use a function pointer or conditional.
+#if defined(_M_X64) || defined(__x86_64__) || defined(_M_AMD64) || (defined(MAC_OSX) && defined(__i386__))
+                // Always SSE2: x86_64 or Intel MacOS X
+                scrypt_1024_1_1_256_sp_sse2((char*)&ss[0],(char*)phash, scratchpad);
+#else
+                // Detect SSE2: 32bit x86 Linux or Windows
+                scrypt_1024_1_1_256_sp((char*)&ss[0], (char*)phash, scratchpad);
+#endif
+#else
+                // Generic scrypt
+                scrypt_1024_1_1_256_sp_generic((char*)&ss[0], (char*)phash, scratchpad);
+#endif
+                // Return the nonce if the hash has at least some zero bits,
+                // caller will check if it has enough to reach the target
+                if ((((uint32_t*)phash)[7] & 0xff000000) == 0)
+                    return true;
+                // If nothing found after trying for a while, return false (caller will retry)
+                if ((nNonce & 0x3f) == 0)
+                    return false;
+                if ((nNonce & 0x03) == 0)
+                    boost::this_thread::interruption_point();
+                break;
+        }
     }
 }
 
-CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey)
+CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey, int algo)
 {
     CPubKey pubkey;
     if (!reservekey.GetReservedKey(pubkey))
         return NULL;
 
     CScript scriptPubKey = CScript() << ToByteVector(pubkey) << OP_CHECKSIG;
-    return CreateNewBlock(scriptPubKey);
+    return CreateNewBlock(scriptPubKey, algo);
 }
 
 bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 {
     LogPrintf("%s\n", pblock->ToString());
     LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
+    int algo = pblock->GetAlgo();
+    uint256 hashPoW = pblock->GetHash(algo);
+    uint256 hashTarget = uint256().SetCompact(pblock->nBits);
+
+    if (hashPoW > hashTarget)
+        return false;
 
     // Found a solution
     {
         LOCK(cs_main);
         if (pblock->hashPrevBlock != chainActive.Tip()->GetBlockHash())
-            return error("BitcoinMiner : generated block is stale");
+            return error("RibbitcoinMiner : generated block is stale");
     }
 
     // Remove key from key pool
@@ -436,16 +495,18 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
     // Process this block the same as if we had received it from another node
     CValidationState state;
     if (!ProcessNewBlock(state, NULL, pblock))
-        return error("BitcoinMiner : ProcessNewBlock, block not accepted");
+        return error("RibbitcoinMiner : ProcessNewBlock, block not accepted");
 
     return true;
 }
 
-void static BitcoinMiner(CWallet *pwallet)
+void static RibbitcoinMiner(CWallet *pwallet, int algo)
 {
-    LogPrintf("BitcoinMiner started\n");
+    LogPrintf("RibbitcoinMiner started (algo=%s)\n", GetAlgoName(algo));
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
-    RenameThread("bitcoin-miner");
+    string threadname("ribbitcoin-miner-");
+    threadname.append(GetAlgoName(algo));
+    RenameThread(threadname.c_str());
 
     // Each thread has its own key and counter
     CReserveKey reservekey(pwallet);
@@ -474,17 +535,17 @@ void static BitcoinMiner(CWallet *pwallet)
             unsigned int nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
             CBlockIndex* pindexPrev = chainActive.Tip();
 
-            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey));
+            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey, algo));
             if (!pblocktemplate.get())
             {
-                LogPrintf("Error in BitcoinMiner: Keypool ran out, please call keypoolrefill before restarting the mining thread\n");
+                LogPrintf("Error in RibbitcoinMiner: Keypool ran out, please call keypoolrefill before restarting the mining thread\n");
                 return;
             }
             CBlock *pblock = &pblocktemplate->block;
             IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
 
-            LogPrintf("Running BitcoinMiner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
-                ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
+            LogPrintf("Running RibbitcoinMiner(algo=%s) with %u transactions in block (%u bytes)\n", GetAlgoName(algo),
+                pblock->vtx.size(), ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
 
             //
             // Search
@@ -495,7 +556,7 @@ void static BitcoinMiner(CWallet *pwallet)
             uint32_t nNonce = 0;
             uint32_t nOldNonce = 0;
             while (true) {
-                bool fFound = ScanHash(pblock, nNonce, &hash);
+                bool fFound = ScanHash(pblock, nNonce, &hash, algo);
                 uint32_t nHashesDone = nNonce - nOldNonce;
                 nOldNonce = nNonce;
 
@@ -507,10 +568,12 @@ void static BitcoinMiner(CWallet *pwallet)
                         // Found a solution
                         pblock->nNonce = nNonce;
                         assert(hash == pblock->GetHash());
+                        
 
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                        LogPrintf("BitcoinMiner:\n");
-                        LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", hash.GetHex(), hashTarget.GetHex());
+                        LogPrintf("RibbitcoinMiner:\n");
+                        LogPrintf("%s proof-of-work found  \n  hash: %s  \ntarget: %s\n", GetAlgoName(algo), 
+                                hash.GetHex(), hashTarget.GetHex());
                         ProcessBlockFound(pblock, *pwallet, reservekey);
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
 
@@ -523,29 +586,29 @@ void static BitcoinMiner(CWallet *pwallet)
                 }
 
                 // Meter hashes/sec
-                static int64_t nHashCounter;
-                if (nHPSTimerStart == 0)
+                static int64_t nHashCounter[NUM_ALGOS];
+                if (nHPSTimerStart[algo] == 0)
                 {
-                    nHPSTimerStart = GetTimeMillis();
-                    nHashCounter = 0;
+                    nHPSTimerStart[algo] = GetTimeMillis();
+                    nHashCounter[algo] = 0;
                 }
                 else
-                    nHashCounter += nHashesDone;
-                if (GetTimeMillis() - nHPSTimerStart > 4000)
+                    nHashCounter[algo] += nHashesDone;
+                if (GetTimeMillis() - nHPSTimerStart[algo] > 4000)
                 {
-                    static CCriticalSection cs;
+                    static CCriticalSection cs[NUM_ALGOS];
                     {
-                        LOCK(cs);
-                        if (GetTimeMillis() - nHPSTimerStart > 4000)
+                        LOCK(cs[algo]);
+                        if (GetTimeMillis() - nHPSTimerStart[algo] > 4000)
                         {
-                            dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nHPSTimerStart);
-                            nHPSTimerStart = GetTimeMillis();
-                            nHashCounter = 0;
-                            static int64_t nLogTime;
-                            if (GetTime() - nLogTime > 30 * 60)
+                            dHashesPerSec[algo] = 1000.0 * nHashCounter[algo] / (GetTimeMillis() - nHPSTimerStart[algo]);
+                            nHPSTimerStart[algo] = GetTimeMillis();
+                            nHashCounter[algo] = 0;
+                            static int64_t nLogTime[NUM_ALGOS];
+                            if (GetTime() - nLogTime[algo] > 30 * 60)
                             {
-                                nLogTime = GetTime();
-                                LogPrintf("hashmeter %6.0f khash/s\n", dHashesPerSec/1000.0);
+                                nLogTime[algo] = GetTime();
+                                LogPrintf("hashmeter(%s) %6.0f khash/s\n", GetAlgoName(algo), dHashesPerSec[algo]/1000.0);
                             }
                         }
                     }
@@ -575,7 +638,7 @@ void static BitcoinMiner(CWallet *pwallet)
     }
     catch (boost::thread_interrupted)
     {
-        LogPrintf("BitcoinMiner terminated\n");
+        LogPrintf("RibbitcoinMiner terminated\n");
         throw;
     }
     catch (const std::runtime_error &e)
@@ -609,7 +672,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
 
     minerThreads = new boost::thread_group();
     for (int i = 0; i < nThreads; i++)
-        minerThreads->create_thread(boost::bind(&BitcoinMiner, pwallet));
+        minerThreads->create_thread(boost::bind(&RibbitcoinMiner, pwallet, (i+1)%NUM_ALGOS));
 }
 
 #endif // ENABLE_WALLET

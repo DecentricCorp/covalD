@@ -10,6 +10,7 @@
 #include "pow.h"
 #include "tinyformat.h"
 #include "uint256.h"
+#include "chainparams.h"
 
 #include <vector>
 
@@ -220,6 +221,8 @@ public:
         return (int64_t)nTime;
     }
 
+    int GetAlgo() const { return ::GetAlgo(nVersion); }
+
     enum { nMedianTimeSpan=11 };
 
     int64_t GetMedianTimePast() const
@@ -282,6 +285,8 @@ public:
     CBlockIndex* GetAncestor(int height);
     const CBlockIndex* GetAncestor(int height) const;
 };
+
+const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, int algo);
 
 /** Used to marshal pointers into hashes for db storage. */
 class CDiskBlockIndex : public CBlockIndex

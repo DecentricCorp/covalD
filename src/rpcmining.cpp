@@ -113,9 +113,9 @@ Value getgenerate(const Array& params, bool fHelp)
 
 Value setgenerate(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1 || params.size() > 2)
+    if (fHelp || params.size() < 1 || params.size() > 3)
         throw runtime_error(
-            "setgenerate generate ( genproclimit )\n"
+            "setgenerate generate ( genproclimit ) \n"
             "\nSet 'generate' true or false to turn generation on or off.\n"
             "Generation is limited to 'genproclimit' processors, -1 is unlimited.\n"
             "See the getgenerate call for the current setting.\n"
@@ -150,7 +150,7 @@ Value setgenerate(const Array& params, bool fHelp)
         if (nGenProcLimit == 0)
             fGenerate = false;
     }
-
+    
     // -regtest mode: don't return until nGenProcLimit blocks are generated
     if (fGenerate && Params().MineBlocksOnDemand())
     {
@@ -170,7 +170,7 @@ Value setgenerate(const Array& params, bool fHelp)
         Array blockHashes;
         while (nHeight < nHeightEnd)
         {
-            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey));
+            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey, ALGO_SHA256D));
             if (!pblocktemplate.get())
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Wallet keypool empty");
             CBlock *pblock = &pblocktemplate->block;
@@ -178,7 +178,7 @@ Value setgenerate(const Array& params, bool fHelp)
                 LOCK(cs_main);
                 IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
             }
-            while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits)) {
+            while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits, miningAlgo)) {
                 // Yes, there is a chance every nonce could fail to satisfy the -regtest
                 // target -- 1 in 2^(2^32). That ain't gonna happen.
                 ++pblock->nNonce;
@@ -203,11 +203,13 @@ Value setgenerate(const Array& params, bool fHelp)
 
 Value gethashespersec(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 0)
+    if (fHelp || params.size() > 1)
         throw runtime_error(
-            "gethashespersec\n"
+            "gethashespersec ( algorithm )\n"
             "\nReturns a recent hashes per second performance measurement while generating.\n"
             "See the getgenerate and setgenerate calls to turn generation on and off.\n"
+            "\nArguments:\n"
+            "1. algorithm        (numeric, optional) The index of the algorithm (default: 0).\n"
             "\nResult:\n"
             "n            (numeric) The recent hashes per second when generation is on (will return 0 if generation is off)\n"
             "\nExamples:\n"
@@ -215,9 +217,11 @@ Value gethashespersec(const Array& params, bool fHelp)
             + HelpExampleRpc("gethashespersec", "")
         );
 
-    if (GetTimeMillis() - nHPSTimerStart > 8000)
+    int algo=0;
+    if (params.size() > 1) algo = params[0].get_int();
+    if (GetTimeMillis() - nHPSTimerStart[algo] > 8000)
         return (int64_t)0;
-    return (int64_t)dHashesPerSec;
+    return (int64_t)dHashesPerSec[algo];
 }
 #endif
 
@@ -233,11 +237,14 @@ Value getmininginfo(const Array& params, bool fHelp)
             "  \"blocks\": nnn,             (numeric) The current block\n"
             "  \"currentblocksize\": nnn,   (numeric) The last block size\n"
             "  \"currentblocktx\": nnn,     (numeric) The last block transaction\n"
+// FIXME            "  \"pow_algo_id\": n           (numeric) PoW algorithm identifier\n"
+// FIXME            "  \"pow_algo\": \"...\"        (string) Current mining algorithm name\n"
             "  \"difficulty\": xxx.xxxxx    (numeric) The current difficulty\n"
+            "  \"difficulties\": [xxx.xxxxxx, xxx.xxxxxx, ...] (list) difficulties for all algorithms\n"
             "  \"errors\": \"...\"          (string) Current errors\n"
             "  \"generate\": true|false     (boolean) If the generation is on or off (see getgenerate or setgenerate calls)\n"
             "  \"genproclimit\": n          (numeric) The processor limit for generation. -1 if no generation. (see getgenerate or setgenerate calls)\n"
-            "  \"hashespersec\": n          (numeric) The hashes per second of the generation, or 0 if no generation.\n"
+            "  \"hashespersec\": [n, n, ...](numeric) The hashes per second of the generation, or 0 if no generation.\n"
             "  \"pooledtx\": n              (numeric) The size of the mem pool\n"
             "  \"testnet\": true|false      (boolean) If using testnet or not\n"
             "  \"chain\": \"xxxx\",         (string) current network name as defined in BIP70 (main, test, regtest)\n"
@@ -251,7 +258,12 @@ Value getmininginfo(const Array& params, bool fHelp)
     obj.push_back(Pair("blocks",           (int)chainActive.Height()));
     obj.push_back(Pair("currentblocksize", (uint64_t)nLastBlockSize));
     obj.push_back(Pair("currentblocktx",   (uint64_t)nLastBlockTx));
-    obj.push_back(Pair("difficulty",       (double)GetDifficulty()));
+    // FIXME obj.push_back(Pair("pow_algo_id",      miningAlgo));
+    // FIXME obj.push_back(Pair("pow_algo",         GetAlgoName(miningAlgo)));
+    obj.push_back(Pair("difficulty",       (double)GetDifficulty(NULL, ALGO_SHA256D)));
+    Array difficulties;
+    for(int i=0;i<NUM_ALGOS;i++) difficulties.push_back((double)GetDifficulty(NULL, i));
+    obj.push_back(Pair("difficulties",     difficulties));
     obj.push_back(Pair("errors",           GetWarnings("statusbar")));
     obj.push_back(Pair("genproclimit",     (int)GetArg("-genproclimit", -1)));
     obj.push_back(Pair("networkhashps",    getnetworkhashps(params, false)));
@@ -260,7 +272,9 @@ Value getmininginfo(const Array& params, bool fHelp)
     obj.push_back(Pair("chain",            Params().NetworkIDString()));
 #ifdef ENABLE_WALLET
     obj.push_back(Pair("generate",         getgenerate(params, false)));
-    obj.push_back(Pair("hashespersec",     gethashespersec(params, false)));
+    Array hashespersec;
+    for(int i=0;i<NUM_ALGOS;i++) hashespersec.push_back((int64_t)dHashesPerSec[i]);
+    obj.push_back(Pair("hashespersec",     hashespersec));
 #endif
     return obj;
 }
@@ -329,6 +343,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
             "1. \"jsonrequestobject\"       (string, optional) A json object in the following spec\n"
             "     {\n"
             "       \"mode\":\"template\"    (string, optional) This must be set to \"template\" or omitted\n"
+            "       \"algorithm\": n         (numeric, optional) The mining algorithm to use\n"
             "       \"capabilities\":[       (array, optional) A list of strings\n"
             "           \"support\"           (string) client side supported feature, 'longpoll', 'coinbasetxn', 'coinbasevalue', 'proposal', 'serverlist', 'workid'\n"
             "           ,...\n"
@@ -380,6 +395,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
 
     std::string strMode = "template";
     Value lpval = Value::null;
+    int algo = miningAlgo;
     if (params.size() > 0)
     {
         const Object& oparam = params[0].get_obj();
@@ -423,6 +439,10 @@ Value getblocktemplate(const Array& params, bool fHelp)
             TestBlockValidity(state, block, pindexPrev, false, true);
             return BIP22ValidationResult(state);
         }
+
+        const Value& algorithmval = find_value(oparam, "algorithm");
+        if (algorithmval.type() == int_type)
+            algo = algorithmval.get_int();
     }
 
     if (strMode != "template")
@@ -512,7 +532,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
             pblocktemplate = NULL;
         }
         CScript scriptDummy = CScript() << OP_TRUE;
-        pblocktemplate = CreateNewBlock(scriptDummy);
+        pblocktemplate = CreateNewBlock(scriptDummy, algo);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
@@ -575,6 +595,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
     Object result;
     result.push_back(Pair("capabilities", aCaps));
     result.push_back(Pair("version", pblock->nVersion));
+    result.push_back(Pair("algorithm", GetAlgo(pblock->nVersion)));
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbaseaux", aux));

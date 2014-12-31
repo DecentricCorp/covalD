@@ -57,3 +57,10 @@ const CBlockIndex *CChain::FindFork(const CBlockIndex *pindex) const {
         pindex = pindex->pprev;
     return pindex;
 }
+
+const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, int algo)
+{
+    while (pindex && (pindex->GetAlgo() != algo))
+        pindex = pindex->pprev;
+    return pindex;
+}

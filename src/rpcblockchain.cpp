@@ -19,22 +19,33 @@ using namespace std;
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry);
 void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeHex);
 
-double GetDifficulty(const CBlockIndex* blockindex)
+double GetDifficulty(const CBlockIndex* blockindex, int algo)
 {
+    unsigned int nBits;
+
     // Floating point number that is a multiple of the minimum difficulty,
     // minimum difficulty = 1.0.
     if (blockindex == NULL)
     {
-        if (chainActive.Tip() == NULL)
-            return 1.0;
+        CBlockIndex* tip = chainActive.Tip();
+        if (tip == NULL)
+            nBits = Params().ProofOfWorkLimit(ALGO_SHA256D).GetCompact();
         else
-            blockindex = chainActive.Tip();
+        {
+            blockindex = GetLastBlockIndex(tip, algo);
+            if (blockindex == NULL)
+                nBits = Params().ProofOfWorkLimit(algo).GetCompact();
+            else
+                nBits = blockindex->nBits;
+        }
     }
+    else
+        nBits = blockindex->nBits;
 
-    int nShift = (blockindex->nBits >> 24) & 0xff;
+    int nShift = (nBits >> 24) & 0xff;
 
     double dDiff =
-        (double)0x0000ffff / (double)(blockindex->nBits & 0x00ffffff);
+        (double)0x0000ffff / (double)(nBits & 0x00ffffff);
 
     while (nShift < 29)
     {
@@ -50,7 +61,6 @@ double GetDifficulty(const CBlockIndex* blockindex)
     return dDiff;
 }
 
-
 Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false)
 {
     Object result;
@@ -63,6 +73,10 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
     result.push_back(Pair("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION)));
     result.push_back(Pair("height", blockindex->nHeight));
     result.push_back(Pair("version", block.nVersion));
+    int algo = block.GetAlgo();
+    result.push_back(Pair("pow_algo_id", algo));
+    result.push_back(Pair("pow_algo", GetAlgoName(algo)));
+    result.push_back(Pair("pow_hash", block.GetHash(algo).GetHex()));
     result.push_back(Pair("merkleroot", block.hashMerkleRoot.GetHex()));
     Array txs;
     BOOST_FOREACH(const CTransaction&tx, block.vtx)
@@ -80,7 +94,7 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
     result.push_back(Pair("time", block.GetBlockTime()));
     result.push_back(Pair("nonce", (uint64_t)block.nNonce));
     result.push_back(Pair("bits", strprintf("%08x", block.nBits)));
-    result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
+    result.push_back(Pair("difficulty", GetDifficulty(blockindex, algo)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
 
     if (blockindex->pprev)
@@ -126,10 +140,12 @@ Value getbestblockhash(const Array& params, bool fHelp)
 
 Value getdifficulty(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 0)
+    if (fHelp || params.size() > 1)
         throw runtime_error(
-            "getdifficulty\n"
+            "getdifficulty ( algorithm )\n"
             "\nReturns the proof-of-work difficulty as a multiple of the minimum difficulty.\n"
+            "\nArguments:\n"
+            "1. algorithm (numeric, optional) the algorithm for which to return the difficulty\n"
             "\nResult:\n"
             "n.nnn       (numeric) the proof-of-work difficulty as a multiple of the minimum difficulty.\n"
             "\nExamples:\n"
@@ -137,7 +153,7 @@ Value getdifficulty(const Array& params, bool fHelp)
             + HelpExampleRpc("getdifficulty", "")
         );
 
-    return GetDifficulty();
+    return GetDifficulty(NULL, (params.size()>0)?params[0].get_int():ALGO_SHA256D);
 }
 
 
@@ -458,7 +474,8 @@ Value getblockchaininfo(const Array& params, bool fHelp)
             "  \"blocks\": xxxxxx,         (numeric) the current number of blocks processed in the server\n"
             "  \"headers\": xxxxxx,        (numeric) the current number of headers we have validated\n"
             "  \"bestblockhash\": \"...\", (string) the hash of the currently best block\n"
-            "  \"difficulty\": xxxxxx,     (numeric) the current difficulty\n"
+            "  \"difficulty\": xxxxxx,     (numeric) the current difficulty for the mining algorithm\n"
+            "  \"difficulties\": [xxx.xxx, xxx.xxx, ...] (list) the current difficulty for all mining algorithms\n"
             "  \"verificationprogress\": xxxx, (numeric) estimate of verification progress [0..1]\n"
             "  \"chainwork\": \"xxxx\"     (string) total amount of work in active chain, in hexadecimal\n"
             "}\n"
@@ -472,7 +489,10 @@ Value getblockchaininfo(const Array& params, bool fHelp)
     obj.push_back(Pair("blocks",                (int)chainActive.Height()));
     obj.push_back(Pair("headers",               pindexBestHeader ? pindexBestHeader->nHeight : -1));
     obj.push_back(Pair("bestblockhash",         chainActive.Tip()->GetBlockHash().GetHex()));
-    obj.push_back(Pair("difficulty",            (double)GetDifficulty()));
+    obj.push_back(Pair("difficulty",            (double)GetDifficulty(NULL, ALGO_SHA256D)));
+    Array difficulties;
+    for(int i=0;i<NUM_ALGOS;i++) difficulties.push_back((double)GetDifficulty(NULL, i));
+    obj.push_back(Pair("difficulties",          difficulties));
     obj.push_back(Pair("verificationprogress",  Checkpoints::GuessVerificationProgress(chainActive.Tip())));
     obj.push_back(Pair("chainwork",             chainActive.Tip()->nChainWork.GetHex()));
     return obj;

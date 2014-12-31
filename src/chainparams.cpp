@@ -102,13 +102,15 @@ public:
         pchMessageStart[3] = 0xe9;
         vAlertPubKey = ParseHex("04a69ac17c75b0f4fa7b2985a5d40dd783f166afe942fd6face7714833497dfd53ebaa556fb8a559ccfac8e88795909c8f5b625db8384507d27ee4ac3baf344549");
         nDefaultPort = 3764;
-        bnProofOfWorkLimit = ~uint256(0) >> 16;
+        bnProofOfWorkLimit[ALGO_SHA256D] = ~uint256(0) >> 32; // 2^28 = 134s at 2MH/s (CPU) 
+        // WARNING: This value cannot be less than the difficulty in the genesis block.
+        bnProofOfWorkLimit[ALGO_SCRYPT] = ~uint256(0) >> 18; // 2^18 = 131s at 2kH/s (CPU)
         nSubsidyHalvingInterval = 210000;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
-        nMinerThreads = 1;
-        nTargetTimespan = 24 * 60 * 60; // daily difficulty retarget
+        nMinerThreads = 2;
+        nTargetTimespan = 10 * 60; // Time interval over which target difficulty is averaged
         nTargetSpacing = 1 * 60; // 1 minute blocks
         nAirdrop = 1000000000;
 
@@ -214,7 +216,7 @@ public:
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 
         fRequireRPCPassword = true;
-        fMiningRequiresPeers = true;
+        fMiningRequiresPeers = false;
         fAllowMinDifficultyBlocks = true;
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
@@ -244,12 +246,13 @@ public:
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
-        nMinerThreads = 1;
+        nMinerThreads = 2;
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
         nAirdrop = 500000000;
 		
-        bnProofOfWorkLimit = ~uint256(0) >> 1;
+        for(int i=0;i<NUM_ALGOS;i++)
+            bnProofOfWorkLimit[i] = ~uint256(0) >> 1;
         genesis.nTime    = 1415208967;
         genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
         genesis.nNonce   = 1524017540;

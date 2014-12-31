@@ -11,6 +11,7 @@
 #include "primitives/block.h"
 #include "protocol.h"
 #include "uint256.h"
+#include "pow.h"
 
 #include <vector>
 
@@ -45,7 +46,7 @@ public:
     const MessageStartChars& MessageStart() const { return pchMessageStart; }
     const std::vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
     int GetDefaultPort() const { return nDefaultPort; }
-    const uint256& ProofOfWorkLimit() const { return bnProofOfWorkLimit; }
+    const uint256& ProofOfWorkLimit(int algo) const { return bnProofOfWorkLimit[algo]; }
     int SubsidyHalvingInterval() const { return nSubsidyHalvingInterval; }
     int Airdrop() const { return nAirdrop; }
     /** Used to check majorities for block version upgrade */
@@ -69,7 +70,7 @@ public:
     bool RequireStandard() const { return fRequireStandard; }
     int64_t TargetTimespan() const { return nTargetTimespan; }
     int64_t TargetSpacing() const { return nTargetSpacing; }
-    int64_t Interval() const { return nTargetTimespan / nTargetSpacing; }
+    int64_t Interval() const { return nTargetTimespan / nTargetSpacing / NUM_ALGOS; }
     /** Make miner stop after a block is found. In RPC, don't return until nGenProcLimit blocks are generated */
     bool MineBlocksOnDemand() const { return fMineBlocksOnDemand; }
     /** In the future use NetworkIDString() for RPC fields */
@@ -88,7 +89,7 @@ protected:
     //! Raw pub key bytes for the broadcast alert signing key.
     std::vector<unsigned char> vAlertPubKey;
     int nDefaultPort;
-    uint256 bnProofOfWorkLimit;
+    uint256 bnProofOfWorkLimit[NUM_ALGOS];
     int nSubsidyHalvingInterval;
     int nAirdrop;
     int nEnforceBlockUpgradeMajority;
