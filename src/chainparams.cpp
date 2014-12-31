@@ -196,7 +196,7 @@ public:
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
 		// Blockreward stuff
-		nPremine = 500000000;
+		nAirdrop = 500000000;
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime    = 1415208967;
         genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
@@ -251,7 +251,7 @@ public:
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
 		// Blockreward stuff
-		nPremine = 500000000;
+		nAirdrop = 500000000;
 		
         bnProofOfWorkLimit = ~uint256(0) >> 1;
         genesis.nTime    = 1415208967;
