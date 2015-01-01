@@ -115,7 +115,7 @@ public:
         nAirdrop = 1000000000;
         dInterestAPY = 5;
         // Airdrop coins are not checked for proof of work 
-        hashAirdropBlock.SetHex("0x00f0ee3b0c749a291a14fbb1a174ae9aeeaf52d1dd01c98a5c14af4d572ad6c4"); 
+        hashAirdropBlock.SetHex("0x008b6b4e6e86a73fc9b04dd372d8ce9195419b05bb5de0126c2e2e2d657936e3"); 
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
