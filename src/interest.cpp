@@ -1,3 +1,4 @@
+#include <cfloat>
 #include "main.h"
 #include "interest.h"
 #include "util.h"
@@ -15,32 +16,7 @@ double InterestCompoundingRate()
 CAmount ComputeInterest(int n, const CTxOut& txOut)
 {
     double r = InterestCompoundingRate();
-//    CAmount interest = r*n + ((n * (n-1)) /2) * pow(r,2) + ((n*(n-1)*(n-2))/6)*pow(r, 3)+ ((n*(n-1)*(n-2)*(n-3))/24)*pow(r,4);
-         CAmount interest = txOut.nValue * (pow(1.0+r, n) - 1);
+    // this is txOut.nValue*((1+r)^n - 1) but with more precision
+    CAmount interest = txOut.nValue*expm1(n*log1p(r));
     return interest;
 }
-
-
-/*CAmount ComputeInterest(const uint256& txHash, const CTxOut& txOut) 
-{
-//    error("Called with txHash - %s", txHash.getHex());
-    CTransaction transaction;
-    uint256 hashBlock;
-
-    if (!GetTransaction(txHash, transaction, hashBlock, true)) {
-       CAmount none = 0;
-       return none;
-       // throw error - how does CheckInputs and some of the Wallet functions throw errors?
-    }
-
-    CBlockIndex* spendBlockIndex = mapBlockIndex[hashBlock];
-    if (spendBlockIndex == NULL) {
-       CAmount none = 0;
-       return none;
-       // throw error
-    }
-
-    int periods = chainActive.Height() - spendBlockIndex->nHeight + 1;
-    return ComputeInterest(periods, txOut);
-}
-*/
