@@ -114,6 +114,8 @@ public:
         nTargetSpacing = 1 * 60; // 1 minute blocks
         nAirdrop = 1000000000;
         dInterestAPY = 5;
+        // Airdrop coins are not checked for proof of work 
+        hashAirdropBlock.SetHex("0x003003b7874163293740d919b4d12ad5df426c0c61f3e8c0884610c44ae5dca1"); 
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
