@@ -96,7 +96,7 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, int algo)
     bool fOverflow;
     uint256 bnTarget;
 
-    if (Params().SkipProofOfWorkCheck())
+    if (Params().SkipProofOfWorkCheck() || hash == Params().HashAirdropBlock())
        return true;
 
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
@@ -104,6 +104,7 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, int algo)
     // Check range
     if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit(algo)) {
         LogPrintf("CheckProofOfWork: \n");
+        LogPrintf("                           hash = %s\n", hash.GetHex());
         LogPrintf("                        bnTaget = %s\n", bnTarget.GetHex());
         LogPrintf("  Params().ProofOfWorkLimit(%s) = %s\n", GetAlgoName(algo), Params().ProofOfWorkLimit(algo).GetHex());
         return error("CheckProofOfWork(algo=%d) : nBits below minimum work", algo);
