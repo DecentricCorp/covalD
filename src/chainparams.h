@@ -77,6 +77,8 @@ public:
     bool TestnetToBeDeprecatedFieldRPC() const { return fTestnetToBeDeprecatedFieldRPC; }
     /** Return the BIP70 network string (main, test or regtest) */
     std::string NetworkIDString() const { return strNetworkID; }
+    double InterestAPY() const { return dInterestAPY; }
+    int CompoundingPeriods() const { return nTargetSpacing * 24 * 365.25; }
     const std::vector<CDNSSeedData>& DNSSeeds() const { return vSeeds; }
     const std::vector<unsigned char>& Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
     const std::vector<CAddress>& FixedSeeds() const { return vFixedSeeds; }
@@ -104,6 +106,7 @@ protected:
     std::string strNetworkID;
     CBlock genesis;
     std::vector<CAddress> vFixedSeeds;
+    double dInterestAPY;
     bool fRequireRPCPassword;
     bool fMiningRequiresPeers;
     bool fDefaultCheckMemPool;
