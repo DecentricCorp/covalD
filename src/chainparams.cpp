@@ -196,7 +196,7 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
-        nAirdrop = 500000000;
+        nAirdrop = 1000000000;
         dInterestAPY = 5;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
@@ -252,7 +252,7 @@ public:
         nMinerThreads = 2;
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
-        nAirdrop = 500000000;
+        nAirdrop = 1000000000;
 		
         for(int i=0;i<NUM_ALGOS;i++)
             bnProofOfWorkLimit[i] = ~uint256(0) >> 1;
