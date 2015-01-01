@@ -49,6 +49,7 @@ public:
     const uint256& ProofOfWorkLimit(int algo) const { return bnProofOfWorkLimit[algo]; }
     int SubsidyHalvingInterval() const { return nSubsidyHalvingInterval; }
     int Airdrop() const { return nAirdrop; }
+    const uint256& HashAirdropBlock() const { return hashAirdropBlock; }
     /** Used to check majorities for block version upgrade */
     int EnforceBlockUpgradeMajority() const { return nEnforceBlockUpgradeMajority; }
     int RejectBlockOutdatedMajority() const { return nRejectBlockOutdatedMajority; }
@@ -94,6 +95,7 @@ protected:
     uint256 bnProofOfWorkLimit[NUM_ALGOS];
     int nSubsidyHalvingInterval;
     int nAirdrop;
+    uint256 hashAirdropBlock;
     int nEnforceBlockUpgradeMajority;
     int nRejectBlockOutdatedMajority;
     int nToCheckBlockUpgradeMajority;
