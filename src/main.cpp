@@ -2522,7 +2522,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
 bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& state, CBlockIndex * const pindexPrev)
 {
     uint256 hash = block.GetHash();
-    if (hash == Params().HashGenesisBlock())
+    if (hash == Params().HashGenesisBlock() || hash == Params().HashAirdropBlock())
         return true;
 
     assert(pindexPrev);
@@ -2530,7 +2530,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     int nHeight = pindexPrev->nHeight+1;
 
     // Check proof of work
-    if ((!Params().SkipProofOfWorkCheck()) &&
+    if ((!Params().SkipProofOfWorkCheck()) && 
        (block.nBits != GetNextWorkRequired(pindexPrev, &block)))
         return state.DoS(100, error("%s : incorrect proof of work", __func__),
                          REJECT_INVALID, "bad-diffbits");
@@ -2615,7 +2615,7 @@ bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, CBloc
 
     // Get prev block index
     CBlockIndex* pindexPrev = NULL;
-    if (hash != Params().HashGenesisBlock()) {
+    if (hash != Params().HashGenesisBlock() && hash != Params().HashAirdropBlock()) {
         BlockMap::iterator mi = mapBlockIndex.find(block.hashPrevBlock);
         if (mi == mapBlockIndex.end())
             return state.DoS(10, error("%s : prev block not found", __func__), 0, "bad-prevblk");
