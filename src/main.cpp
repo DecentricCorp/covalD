@@ -1391,6 +1391,7 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
     inputs.ModifyCoins(tx.GetHash())->FromTx(tx, nHeight);
 }
 
+
 bool CScriptCheck::operator()() {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
     if (!VerifyScript(scriptSig, scriptPubKey, nFlags, CachingSignatureChecker(*ptxTo, nIn, cacheStore), &error)) {
@@ -1417,6 +1418,8 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
         int nSpendHeight = pindexPrev->nHeight + 1;
         CAmount nValueIn = 0;
         CAmount nFees = 0;
+
+        error("TK: CheckInputs() for %s", tx.GetHash().ToString());
         for (unsigned int i = 0; i < tx.vin.size(); i++)
         {
             const COutPoint &prevout = tx.vin[i].prevout;
@@ -1432,17 +1435,38 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
             }
 
             // Check for negative or overflow input values
-            nValueIn += coins->vout[prevout.n].nValue;
-            if (!MoneyRange(coins->vout[prevout.n].nValue) || !MoneyRange(nValueIn))
+            const CTxOut spendTx = coins->vout[prevout.n];
+
+            CAmount txOutInterest;
+            if (coins->nHeight == MEMPOOL_HEIGHT) {
+                txOutInterest = 0;
+            } else {
+                txOutInterest = ComputeInterest((nSpendHeight - coins->nHeight), spendTx);
+            }
+
+            CAmount txOutValue = spendTx.nValue + txOutInterest;
+
+	    error("   TK: Input %d", i);
+            error("       txOut.nValue: %d", spendTx.nValue);
+            error("         Current Height: %d", nSpendHeight);
+            error("           Coins Height: %d", coins->nHeight);
+            error("         Coins Height+1: %d", coins->nHeight);
+
+	    error("       Compounding periods: %d", (nSpendHeight - coins->nHeight));
+            error("       Interest is: %s", txOutInterest);
+            error("       Redeemable: %d", txOutValue);
+
+            nValueIn += txOutValue;
+            if (!MoneyRange(spendTx.nValue) || !MoneyRange(nValueIn))
                 return state.DoS(100, error("CheckInputs() : txin values out of range"),
                                  REJECT_INVALID, "bad-txns-inputvalues-outofrange");
 
         }
 
         if (nValueIn < tx.GetValueOut())
-            return state.DoS(100, error("CheckInputs() : %s value in (%s) < value out (%s)",
+            return state.DoS(100, error("BASIS: CheckInputs() : %s value in (%s) < value out (%s)",
                                         tx.GetHash().ToString(), FormatMoney(nValueIn), FormatMoney(tx.GetValueOut())),
-                             REJECT_INVALID, "bad-txns-in-belowout");
+                             REJECT_INVALID, "BASIS: bad-txns-in-belowout");
 
         // Tally transaction fees
         CAmount nTxFee = nValueIn - tx.GetValueOut();
@@ -2570,7 +2594,6 @@ bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, CBloc
         pindexPrev = (*mi).second;
         if (pindexPrev->nStatus & BLOCK_FAILED_MASK)
             return state.DoS(100, error("%s : prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
-=======
         int nHeight = pindexPrev->nHeight+1;
 
         // Check proof of work
