@@ -113,6 +113,7 @@ public:
         nTargetTimespan = 10 * 60; // Time interval over which target difficulty is averaged
         nTargetSpacing = 1 * 60; // 1 minute blocks
         nAirdrop = 1000000000;
+        dInterestAPY = 5;
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
@@ -196,6 +197,8 @@ public:
         nTargetTimespan = 14 * 24 * 60 * 60; //! two weeks
         nTargetSpacing = 10 * 60;
         nAirdrop = 500000000;
+        dInterestAPY = 5;
+
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime    = 1415208967;
         genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
@@ -253,6 +256,8 @@ public:
 		
         for(int i=0;i<NUM_ALGOS;i++)
             bnProofOfWorkLimit[i] = ~uint256(0) >> 1;
+        dInterestAPY = 5;
+
         genesis.nTime    = 1415208967;
         genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
         genesis.nNonce   = 1524017540;
@@ -287,6 +292,7 @@ public:
         networkID = CBaseChainParams::UNITTEST;
         strNetworkID = "unittest";
         nDefaultPort = 18445;
+
         vFixedSeeds.clear(); //! Unit test mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Unit test mode doesn't have any DNS seeds.
 
