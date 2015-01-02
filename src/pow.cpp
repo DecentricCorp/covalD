@@ -3,11 +3,14 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <map>
+
 #include "pow.h"
 #include "chain.h"
 
 #include "chain.h"
 #include "chainparams.h"
+#include "checkpoints.h"
 #include "primitives/block.h"
 #include "uint256.h"
 #include "util.h"
@@ -17,9 +20,13 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast,
 {
     int algo = pblock->GetAlgo();
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
+    const Checkpoints::MapCheckpoints& cp = *Params().Checkpoints().mapCheckpoints;
+    int minheight = 0;
+    for(std::map<int, uint256>::const_iterator it=cp.begin(); it != cp.end(); it++) 
+        if(it->first > minheight) minheight = it->first; 
 
     // Genesis block
-    if (pindexLast == NULL)
+    if (pindexLast == NULL || pindexLast->nHeight <= minheight) 
         return nProofOfWorkLimit;
 
     // If we're within one averaging interval, just return the work of the
@@ -27,7 +34,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast,
     if ((pindexLast->nHeight+1) % Params().Interval() != 0)
     {
         const CBlockIndex* pindex = GetLastBlockIndex(pindexLast, algo);
-        if(pindex == NULL)
+        if(pindex == NULL || pindex->nHeight <= minheight)
             return nProofOfWorkLimit;
         if (Params().AllowMinDifficultyBlocks())
         {
@@ -42,7 +49,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast,
                 while (pindex && pindex->pprev && pindex->nHeight % Params().Interval() != 0 
                         && pindex->nBits == nProofOfWorkLimit)
                     pindex = GetLastBlockIndex(pindex->pprev, algo);
-                if(pindex == NULL)
+                if(pindex == NULL || pindex->nHeight <= minheight)
                     return nProofOfWorkLimit;
                 return pindex->nBits;
             }
@@ -56,7 +63,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast,
     {
         pindexFirst = pindexFirst->pprev;
         pindexFirst = GetLastBlockIndex(pindexFirst, algo);
-        if (pindexFirst == NULL) 
+        if (pindexFirst == NULL || pindexFirst->nHeight <= minheight)
             return nProofOfWorkLimit; // not nAveragingInterval blocks of this algo available
     }
 
