@@ -1062,17 +1062,31 @@ void CWallet::ResendWalletTransactions()
 CAmount CWallet::GetBalance() const
 {
     CAmount nTotal = 0;
+    CAmount nInterest = 0;
     {
         LOCK2(cs_main, cs_wallet);
+        LOCK(mempool.cs);
+        CCoinsViewMemPool view(pcoinsTip, mempool);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it)
         {
             const CWalletTx* pcoin = &(*it).second;
-            if (pcoin->IsTrusted())
+            CCoins coins;
+
+            CBlockIndex *pindexPrev = mapBlockIndex.find(pcoinsTip->GetBestBlock())->second;
+            // this is correct current block number
+            int nSpendHeight = pindexPrev->nHeight + 1;
+
+            // coins.nHeight the block number when the transaction occured
+            view.GetCoins(pcoin->GetHash(), coins);
+
+            if (pcoin->IsTrusted()){
                 nTotal += pcoin->GetAvailableCredit();
+                nInterest += ComputeInterest(nSpendHeight - coins.nHeight,  pcoin->vout[0]);
+            }
         }
     }
 
-    return nTotal;
+    return nTotal + nInterest;
 }
 
 CAmount CWallet::GetUnconfirmedBalance() const
