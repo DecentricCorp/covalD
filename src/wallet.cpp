@@ -1069,6 +1069,7 @@ CAmount CWallet::GetBalance() const
         CCoinsViewMemPool view(pcoinsTip, mempool);
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it)
         {
+            const uint256& wtxid = it->first;
             const CWalletTx* pcoin = &(*it).second;
             CCoins coins;
 
@@ -1079,14 +1080,25 @@ CAmount CWallet::GetBalance() const
             // coins.nHeight the block number when the transaction occured
             view.GetCoins(pcoin->GetHash(), coins);
 
+
             if (pcoin->IsTrusted()){
                 nTotal += pcoin->GetAvailableCredit();
-                nInterest += ComputeInterest(nSpendHeight - coins.nHeight,  pcoin->vout[0]);
-            }
+
+                 if(pcoin->GetAvailableCredit() > 0){
+                    for(uint i = 0; i < pcoin->vout.size(); i++){
+                        isminetype mine = IsMine(pcoin->vout[i]);
+                            // UTXO only
+                        if(!IsSpent(wtxid,i) && mine != ISMINE_NO){
+                            nInterest += ComputeInterest(nSpendHeight - coins.nHeight,  pcoin->vout[i]);
+                        }
+                    }
+                  }
+             }
+             nTotal += nInterest;
         }
     }
 
-    return nTotal + nInterest;
+    return nTotal;
 }
 
 CAmount CWallet::GetUnconfirmedBalance() const
