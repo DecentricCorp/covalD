@@ -15,7 +15,7 @@
 #include "uint256.h"
 #include "util.h"
 
-unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBlockHeader *pblock, uint64_t TargetBlocksSpacingSeconds, uint64_t PastBlocksMin, uint64_t PastBlocksMax) {
+unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBlockHeader *pblock, uint64_t TargetBlocksSpacingSeconds, uint64_t PastBlocksMin, uint64_t PastBlocksMax, int algo) {
         /* current difficulty formula, megacoin - kimoto gravity well */
         const CBlockIndex  *BlockLastSolved = pindexLast;
         const CBlockIndex  *BlockReading    = pindexLast;
@@ -31,7 +31,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
         double                               EventHorizonDeviationFast;
         double                               EventHorizonDeviationSlow;
         
-    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || (uint64_t)BlockLastSolved->nHeight < PastBlocksMin) { return Params().ProofOfWorkLimit().GetCompact(); }
+    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || (uint64_t)BlockLastSolved->nHeight < PastBlocksMin) { return Params().ProofOfWorkLimit(algo).GetCompact(); }
 	
         int64_t LatestBlockTime = BlockLastSolved->GetBlockTime();
 		
@@ -75,7 +75,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
                 bnNew *= PastRateActualSeconds;
                 bnNew /= PastRateTargetSeconds;
         }
-    if (bnNew > Params().ProofOfWorkLimit()) { bnNew = Params().ProofOfWorkLimit(); }
+    if (bnNew > Params().ProofOfWorkLimit(algo)) { bnNew = Params().ProofOfWorkLimit(algo); }
         
     /// debug print
     printf("Difficulty Retarget - Kimoto Gravity Well\n");
@@ -88,6 +88,8 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
 
 unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
 {
+		int algo = pblock->GetAlgo();
+
         static const int64_t        BlocksTargetSpacing                        = 60; // 60 seconds
         unsigned int                TimeDaySeconds                                = 60 * 60 * 24;
         int64_t                       PastSecondsMin                                = TimeDaySeconds * 0.25;
@@ -95,7 +97,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         uint64_t                      PastBlocksMin                                = PastSecondsMin / BlocksTargetSpacing;
         uint64_t                      PastBlocksMax                                = PastSecondsMax / BlocksTargetSpacing;        
         
-        return KimotoGravityWell(pindexLast, pblock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
+        return KimotoGravityWell(pindexLast, pblock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax, algo);
 }
 
 // FIXME algo is only needed here for a minimum work block.
