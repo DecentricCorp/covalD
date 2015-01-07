@@ -86,7 +86,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
         return bnNew.GetCompact();
 }
 
-unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
 {
 		int algo = pblock->GetAlgo();
 
