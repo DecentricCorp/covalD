@@ -31,7 +31,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
         double                               EventHorizonDeviationFast;
         double                               EventHorizonDeviationSlow;
         
-    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || (uint64_t_t)BlockLastSolved->nHeight < PastBlocksMin) { return Params().ProofOfWorkLimit().GetCompact(); }
+    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || (uint64_t)BlockLastSolved->nHeight < PastBlocksMin) { return Params().ProofOfWorkLimit().GetCompact(); }
 	
         int64_t LatestBlockTime = BlockLastSolved->GetBlockTime();
 		
