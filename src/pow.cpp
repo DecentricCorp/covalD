@@ -52,7 +52,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
                 PastRateTargetSeconds                        = TargetBlocksSpacingSeconds * PastBlocksMass;
                 PastRateAdjustmentRatio                        = double(1);
 				
-				if (PastRateActualSeconds < 5) { PastRateActualSeconds = 10; }
+				if (PastRateActualSeconds < 5) { PastRateActualSeconds = 5; }
 
 
 				
