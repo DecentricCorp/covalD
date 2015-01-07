@@ -20,7 +20,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast,
 {
     int algo = pblock->GetAlgo();
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
-    return nProofOfWorkLimit;
     const Checkpoints::MapCheckpoints& cp = *Params().Checkpoints().mapCheckpoints;
     int minheight = 0;
     for(std::map<int, uint256>::const_iterator it=cp.begin(); it != cp.end(); it++) 
