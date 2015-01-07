@@ -25,8 +25,8 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
         int64_t                                PastRateActualSeconds    = 0;
         int64_t                                PastRateTargetSeconds    = 0;
         double                               PastRateAdjustmentRatio = double(1);
-        CBigNum                              PastDifficultyAverage;
-        CBigNum                              PastDifficultyAveragePrev;
+        uint256                              PastDifficultyAverage;
+        uint256                              PastDifficultyAveragePrev;
         double                               EventHorizonDeviation;
         double                               EventHorizonDeviationFast;
         double                               EventHorizonDeviationSlow;
@@ -40,7 +40,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
                 PastBlocksMass++;
                 
                 if (i == 1)        { PastDifficultyAverage.SetCompact(BlockReading->nBits); }
-                else                { PastDifficultyAverage = ((CBigNum().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
+                else                { PastDifficultyAverage = ((uint256().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
                 PastDifficultyAveragePrev = PastDifficultyAverage;
 				
 				if (LatestBlockTime < BlockReading->GetBlockTime()) {
@@ -70,7 +70,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
                 BlockReading = BlockReading->pprev;
         }
         
-        CBigNum bnNew(PastDifficultyAverage);
+        uint256 bnNew(PastDifficultyAverage);
         if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
                 bnNew *= PastRateActualSeconds;
                 bnNew /= PastRateTargetSeconds;
@@ -80,7 +80,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
     /// debug print
     printf("Difficulty Retarget - Kimoto Gravity Well\n");
     printf("PastRateAdjustmentRatio = %g\n", PastRateAdjustmentRatio);
-    printf("Before: %08x  %s\n", BlockLastSolved->nBits, CBigNum().SetCompact(BlockLastSolved->nBits).getuint256().ToString().c_str());
+    printf("Before: %08x  %s\n", BlockLastSolved->nBits, uint256().SetCompact(BlockLastSolved->nBits).ToString().c_str());
     printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
         
         return bnNew.GetCompact();
