@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <cmath>
 
 class CBlockHeader;
 class CBlockIndex;
