@@ -1062,24 +1062,15 @@ void CWallet::ResendWalletTransactions()
 CAmount CWallet::GetBalance() const
 {
     CAmount nTotal = 0;
-    CAmount nInterest = 0;
+    CAmount nInterest = 0;    
     {
         LOCK2(cs_main, cs_wallet);
-        LOCK(mempool.cs);
-        CCoinsViewMemPool view(pcoinsTip, mempool);
+
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it)
         {
             const uint256& wtxid = it->first;
             const CWalletTx* pcoin = &(*it).second;
-            CCoins coins;
-
-            CBlockIndex *pindexPrev = mapBlockIndex.find(pcoinsTip->GetBestBlock())->second;
-            // this is correct current block number
-            int nSpendHeight = pindexPrev->nHeight + 1;
-
-            // coins.nHeight the block number when the transaction occured
-            view.GetCoins(pcoin->GetHash(), coins);
-
+            const int nPeriods = pcoin->GetDepthInMainChain();
 
             if (pcoin->IsTrusted()){
                 nTotal += pcoin->GetAvailableCredit();
@@ -1089,7 +1080,7 @@ CAmount CWallet::GetBalance() const
                         isminetype mine = IsMine(pcoin->vout[i]);
                             // UTXO only
                         if(!IsSpent(wtxid,i) && mine != ISMINE_NO){
-                            nInterest += ComputeInterest(nSpendHeight - coins.nHeight,  pcoin->vout[i]);
+                            nInterest += ComputeInterest(nPeriods,  pcoin->vout[i]);
                         }
                     }
                   }
