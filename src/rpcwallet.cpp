@@ -667,6 +667,8 @@ Value getbalance(const Array& params, bool fHelp)
         // (GetBalance() sums up all unspent TxOuts)
         // getbalance and getbalance '*' 0 should return the same number
         CAmount nBalance = 0;
+        CAmount nInterest = 0;
+
         for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
         {
             const CWalletTx& wtx = (*it).second;
@@ -678,15 +680,27 @@ Value getbalance(const Array& params, bool fHelp)
             list<COutputEntry> listReceived;
             list<COutputEntry> listSent;
             wtx.GetAmounts(listReceived, listSent, allFee, strSentAccount, filter);
+
             if (wtx.GetDepthInMainChain() >= nMinDepth)
             {
                 BOOST_FOREACH(const COutputEntry& r, listReceived)
                     nBalance += r.amount;
             }
+
+            if(wtx.GetAvailableCredit() > 0){
+                for(uint i = 0; i < wtx.vout.size(); i++){
+                    // we need find the UTXO of this
+                    if(wtx.GetAvailableCredit() == wtx.vout[i].nValue)
+                        nInterest += ComputeInterest(wtx.GetDepthInMainChain(), wtx.vout[i]);
+                }
+            }
+
+            nBalance += nInterest;
             BOOST_FOREACH(const COutputEntry& s, listSent)
                 nBalance -= s.amount;
             nBalance -= allFee;
         }
+
         return  ValueFromAmount(nBalance);
     }
 
