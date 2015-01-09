@@ -594,7 +594,6 @@ Value getreceivedbyaccount(const Array& params, bool fHelp)
 CAmount GetAccountBalance(CWalletDB& walletdb, const string& strAccount, int nMinDepth, const isminefilter& filter)
 {
     CAmount nBalance = 0;
-    CAmount nInterest = 0;
 
     // Tally wallet transactions
     for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
@@ -615,10 +614,9 @@ CAmount GetAccountBalance(CWalletDB& walletdb, const string& strAccount, int nMi
             for(uint i = 0; i < wtx.vout.size(); i++){
                 // we need find the UTXO of this
                 if(wtx.GetAvailableCredit() == wtx.vout[i].nValue)
-                    nInterest += ComputeInterest(wtx.GetDepthInMainChain(), wtx.vout[i]);
+                    nBalance+= ComputeInterest(wtx.GetDepthInMainChain(), wtx.vout[i]);
             }
         }
-        nBalance += nInterest;
     }
 
     // Tally internal accounting entries
@@ -678,7 +676,7 @@ Value getbalance(const Array& params, bool fHelp)
         // (GetBalance() sums up all unspent TxOuts)
         // getbalance and getbalance '*' 0 should return the same number
         CAmount nBalance = 0;
-        CAmount nInterest = 0;
+
 
         for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
         {
@@ -702,11 +700,10 @@ Value getbalance(const Array& params, bool fHelp)
                 for(uint i = 0; i < wtx.vout.size(); i++){
                     // we need find the UTXO of this
                     if(wtx.GetAvailableCredit() == wtx.vout[i].nValue)
-                        nInterest += ComputeInterest(wtx.GetDepthInMainChain(), wtx.vout[i]);
+                        nBalance += ComputeInterest(wtx.GetDepthInMainChain(), wtx.vout[i]);
                 }
             }
 
-            nBalance += nInterest;
             BOOST_FOREACH(const COutputEntry& s, listSent)
                 nBalance -= s.amount;
             nBalance -= allFee;
