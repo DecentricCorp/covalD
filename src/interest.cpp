@@ -21,9 +21,9 @@ CAmount ComputeInterest(int n, const CTxOut& txOut)
     // this is txOut.nValue*((1+r)^n - 1) but with more precision
     // the computation was for satoshi
     // freeg is 10^8
-    double nFreeg = txOut.nValue / 100000000;
+
     // converted to satoshi 10^6
-    int nValue = nFreeg * 1000000;
+    int nValue = txOut.nValue;
 
     CAmount interest = nValue*expm1(n*log1p(r));
     //std::cout << float(interest) << std::endl;

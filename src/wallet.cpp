@@ -1062,7 +1062,7 @@ void CWallet::ResendWalletTransactions()
 CAmount CWallet::GetBalance() const
 {
     CAmount nTotal = 0;
-    CAmount nInterest = 0;    
+    // CAmount nInterest = 0;
     {
         LOCK2(cs_main, cs_wallet);
 
@@ -1080,13 +1080,13 @@ CAmount CWallet::GetBalance() const
                         isminetype mine = IsMine(pcoin->vout[i]);
                             // UTXO only
                         if(!IsSpent(wtxid,i) && mine != ISMINE_NO){
-                            nInterest += ComputeInterest(nPeriods,  pcoin->vout[i]);
+                            nTotal += ComputeInterest(nPeriods,  pcoin->vout[i]);
                         }
                     }
                   }
-             }
-             nTotal += nInterest;
+             }       
         }
+
     }
 
     return nTotal;
@@ -1277,6 +1277,11 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
 
         int i = output.i;
         CAmount n = pcoin->vout[i].nValue;
+
+        //we need to add the interest here
+        CAmount nInterest = ComputeInterest(output.tx->GetDepthInMainChain(), pcoin->vout[i]);
+
+        n = n + nInterest;
 
         pair<CAmount,pair<const CWalletTx*,unsigned int> > coin = make_pair(n,make_pair(pcoin, i));
 
