@@ -153,7 +153,7 @@ public:
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
-        base58Prefixes[SECRET_KEY] =     list_of(128); // Same as bitcoin
+        base58Prefixes[SECRET_KEY]     = list_of(61 + 128); // The vanitygen convention appears to be pubkey + 128
         base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
         base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
 
@@ -217,7 +217,7 @@ public:
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(65); // Starts with T
         base58Prefixes[SCRIPT_ADDRESS] = list_of(127); // Starts with t
-        base58Prefixes[SECRET_KEY]     = list_of(239); // Same as bitcoin
+        base58Prefixes[SECRET_KEY]     = list_of(65 + 128); // The vanitygen convention appears to be pubkey + 128
         base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
         base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
 
