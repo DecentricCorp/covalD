@@ -56,7 +56,7 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
         (     0, uint256("0x00000000b2c8fc5991e8c92c73ff66825827c6dd740217234541699ec5dc3677")) // Genesis
-        (     1, uint256("0x00e76e2c6474f6d6ae7d3195948a1d8b52459c111c4cbed88c4c9d3f6e52714c")) // Airdrop
+        (     1, uint256("0x000be213b1b39612ac9ccc64f27a5d12668ae139f9252d9fc6ca327f95f03569")) // Airdrop
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
@@ -69,7 +69,7 @@ static const Checkpoints::CCheckpointData data = {
 static Checkpoints::MapCheckpoints mapCheckpointsTestnet =
         boost::assign::map_list_of
         (   0, uint256("0x0000e80f6ba2da2d801a3ce187388d2200c86f85e07178dcea25772f872576f1"))
-        (   1, uint256("0x00e76e2c6474f6d6ae7d3195948a1d8b52459c111c4cbed88c4c9d3f6e52714c")) // Airdrop
+        (   1, uint256("0x000be213b1b39612ac9ccc64f27a5d12668ae139f9252d9fc6ca327f95f03569")) // Airdrop
         ;
 static const Checkpoints::CCheckpointData dataTestnet = {
         &mapCheckpointsTestnet,
@@ -118,7 +118,7 @@ public:
         nAirdrop = 1000000000;
         dInterestAPY = 5;
         // Airdrop coins are not checked for proof of work 
-        hashAirdropBlock.SetHex("0x00e76e2c6474f6d6ae7d3195948a1d8b52459c111c4cbed88c4c9d3f6e52714c"); 
+        hashAirdropBlock.SetHex("0x000be213b1b39612ac9ccc64f27a5d12668ae139f9252d9fc6ca327f95f03569"); 
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
@@ -153,7 +153,7 @@ public:
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
-        base58Prefixes[SECRET_KEY] =     list_of(128); // Same as bitcoin
+        base58Prefixes[SECRET_KEY]     = list_of(61 + 128); // The vanitygen convention appears to be pubkey + 128
         base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
         base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
 
@@ -217,7 +217,7 @@ public:
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(65); // Starts with T
         base58Prefixes[SCRIPT_ADDRESS] = list_of(127); // Starts with t
-        base58Prefixes[SECRET_KEY]     = list_of(239); // Same as bitcoin
+        base58Prefixes[SECRET_KEY]     = list_of(65 + 128); // The vanitygen convention appears to be pubkey + 128
         base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
         base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
 
