@@ -1212,7 +1212,8 @@ CAmount GetBlockValue(int nHeight, const CAmount& nFees)
 {
     //default block reward 906
     //daily production goal 1304640 RBT
-    CAmount nSubsidy = 906 * COIN;
+    CAmount nSubsidy = 0 * COIN;
+    // We will change this once we leave our closed source period
 	
     //If the block is the first spendable block
     if(nHeight == 1){
