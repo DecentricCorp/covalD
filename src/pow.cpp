@@ -52,14 +52,14 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
                 PastRateTargetSeconds                        = TargetBlocksSpacingSeconds * PastBlocksMass;
                 PastRateAdjustmentRatio                        = double(1);
 				
-				if (PastRateActualSeconds < 5) { PastRateActualSeconds = 5; }
+				if (PastRateActualSeconds < 2) { PastRateActualSeconds = 2; }
 
 
 				
                 if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
                 PastRateAdjustmentRatio                        = double(PastRateTargetSeconds) / double(PastRateActualSeconds);
                 }
-                EventHorizonDeviation                        = 1 + (0.7084 * std::pow((double(PastBlocksMass)/double(28.2)), -1.228));
+                EventHorizonDeviation                        = 1 + (0.7084 * std::pow((double(PastBlocksMass)/double(57.6)), -1.228));
                 EventHorizonDeviationFast                = EventHorizonDeviation;
                 EventHorizonDeviationSlow                = 1 / EventHorizonDeviation;
                 
@@ -92,8 +92,8 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
         static const int64_t        BlocksTargetSpacing                        = 60; // 60 seconds
         unsigned int                TimeDaySeconds                                = 60 * 60 * 24;
-        int64_t                       PastSecondsMin                                = TimeDaySeconds * 0.01;
-        int64_t                       PastSecondsMax                                = TimeDaySeconds * 0.14;
+        int64_t                       PastSecondsMin                                = TimeDaySeconds * 0.04;
+        int64_t                       PastSecondsMax                                = TimeDaySeconds * 1;
         uint64_t                      PastBlocksMin                                = PastSecondsMin / BlocksTargetSpacing;
         uint64_t                      PastBlocksMax                                = PastSecondsMax / BlocksTargetSpacing;        
         
