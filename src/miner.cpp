@@ -564,8 +564,8 @@ void static BitcoinMiner(CWallet *pwallet)
 					unsigned int nNonceFound;
 
 					// Crypto++ SHA256
-					nNonceFound = ScanHash_CryptoPP(pmidstate, pdata + 64, phash1,
-													(char*)&hash, nHashesDone);
+					nNonceFound = ScanHash(pmidstate, pdata + 64, phash1,
+													(char*)&hash, nHashesDone, 0);
 
 					// Check if something found
 					if (nNonceFound != (unsigned int) -1)
