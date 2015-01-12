@@ -60,10 +60,7 @@ const CBlockIndex *CChain::FindFork(const CBlockIndex *pindex) const {
 
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, int algo)
 {
-    while (pindex && (pindex->GetAlgo() != algo)){ //actually 0 is good because scrypt and sha have the same diff
-     if(pindex->pprev->nHeight == 1){
-		 return pindex;
-	 }
+    while (pindex && (pindex->GetAlgo() != algo)){
 		pindex = pindex->pprev;
 	}
     return pindex;
