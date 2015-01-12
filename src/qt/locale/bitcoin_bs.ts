@@ -1,4 +1,7 @@
-<TS language="bs" version="2.0">
+<TS language="bs" version="2.1">
+<context>
+    <name>AboutDialog</name>
+    </context>
 <context>
     <name>AddressBookPage</name>
     </context>
@@ -41,8 +44,8 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Bitcoin Core</source>
-        <translation>Bitcoin Jezrga</translation>
+        <source>Bitcoin</source>
+        <translation>Bitcoin</translation>
     </message>
     </context>
 <context>
@@ -58,10 +61,11 @@
     <name>PaymentServer</name>
     </context>
 <context>
-    <name>PeerTableModel</name>
-    </context>
-<context>
     <name>QObject</name>
+    <message>
+        <source>Bitcoin</source>
+        <translation>Bitcoin</translation>
+    </message>
     </context>
 <context>
     <name>QRImageWidget</name>
@@ -147,9 +151,6 @@
         <source>This year</source>
         <translation>Ove godine</translation>
     </message>
-    </context>
-<context>
-    <name>UnitDisplayStatusBarControl</name>
     </context>
 <context>
     <name>WalletFrame</name>

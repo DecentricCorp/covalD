@@ -31,24 +31,19 @@ CWalletTx *WalletModelTransaction::getTransaction()
     return walletTransaction;
 }
 
-unsigned int WalletModelTransaction::getTransactionSize()
-{
-    return (!walletTransaction ? 0 : (::GetSerializeSize(*(CTransaction*)walletTransaction, SER_NETWORK, PROTOCOL_VERSION)));
-}
-
-CAmount WalletModelTransaction::getTransactionFee()
+qint64 WalletModelTransaction::getTransactionFee()
 {
     return fee;
 }
 
-void WalletModelTransaction::setTransactionFee(const CAmount& newFee)
+void WalletModelTransaction::setTransactionFee(qint64 newFee)
 {
     fee = newFee;
 }
 
-CAmount WalletModelTransaction::getTotalTransactionAmount()
+qint64 WalletModelTransaction::getTotalTransactionAmount()
 {
-    CAmount totalTransactionAmount = 0;
+    qint64 totalTransactionAmount = 0;
     foreach(const SendCoinsRecipient &rcp, recipients)
     {
         totalTransactionAmount += rcp.amount;

@@ -5,16 +5,13 @@
 #include "clientmodel.h"
 
 #include "guiconstants.h"
-#include "peertablemodel.h"
 
 #include "alert.h"
 #include "chainparams.h"
 #include "checkpoints.h"
-#include "clientversion.h"
 #include "main.h"
 #include "net.h"
 #include "ui_interface.h"
-#include "util.h"
 
 #include <stdint.h>
 
@@ -25,14 +22,11 @@
 static const int64_t nClientStartupTime = GetTime();
 
 ClientModel::ClientModel(OptionsModel *optionsModel, QObject *parent) :
-    QObject(parent),
-    optionsModel(optionsModel),
-    peerTableModel(0),
+    QObject(parent), optionsModel(optionsModel),
     cachedNumBlocks(0),
     cachedReindexing(0), cachedImporting(0),
     numBlocksAtStartup(-1), pollTimer(0)
 {
-    peerTableModel = new PeerTableModel(this);
     pollTimer = new QTimer(this);
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(updateTimer()));
     pollTimer->start(MODEL_UPDATE_DELAY);
@@ -87,7 +81,7 @@ QDateTime ClientModel::getLastBlockDate() const
     if (chainActive.Tip())
         return QDateTime::fromTime_t(chainActive.Tip()->GetBlockTime());
     else
-        return QDateTime::fromTime_t(Params().GenesisBlock().GetBlockTime()); // Genesis block's time of current network
+        return QDateTime::fromTime_t(Params().GenesisBlock().nTime); // Genesis block's time of current network
 }
 
 double ClientModel::getVerificationProgress() const
@@ -116,8 +110,8 @@ void ClientModel::updateTimer()
         cachedReindexing = fReindex;
         cachedImporting = fImporting;
 
-        emit numBlocksChanged(newNumBlocks);
-    }
+		emit numBlocksChanged(newNumBlocks);
+	}
 
     emit bytesChanged(getTotalBytesRecv(), getTotalBytesSent());
 }
@@ -142,6 +136,14 @@ void ClientModel::updateAlert(const QString &hash, int status)
     }
 
     emit alertsChanged(getStatusBarWarnings());
+}
+
+QString ClientModel::getNetworkName() const
+{
+    QString netname(QString::fromStdString(Params().DataDir()));
+    if(netname.isEmpty())
+        netname = "main";
+    return netname;
 }
 
 bool ClientModel::inInitialBlockDownload() const
@@ -171,11 +173,6 @@ OptionsModel *ClientModel::getOptionsModel()
     return optionsModel;
 }
 
-PeerTableModel *ClientModel::getPeerTableModel()
-{
-    return peerTableModel;
-}
-
 QString ClientModel::formatFullVersion() const
 {
     return QString::fromStdString(FormatFullVersion());
@@ -202,12 +199,10 @@ QString ClientModel::formatClientStartupTime() const
 }
 
 // Handlers for core signals
-static void ShowProgress(ClientModel *clientmodel, const std::string &title, int nProgress)
+static void NotifyBlocksChanged(ClientModel *clientmodel)
 {
-    // emits signal "showProgress"
-    QMetaObject::invokeMethod(clientmodel, "showProgress", Qt::QueuedConnection,
-                              Q_ARG(QString, QString::fromStdString(title)),
-                              Q_ARG(int, nProgress));
+    // This notification is too frequent. Don't trigger a signal.
+    // Don't remove it, though, as it might be useful later.
 }
 
 static void NotifyNumConnectionsChanged(ClientModel *clientmodel, int newNumConnections)
@@ -228,7 +223,7 @@ static void NotifyAlertChanged(ClientModel *clientmodel, const uint256 &hash, Ch
 void ClientModel::subscribeToCoreSignals()
 {
     // Connect signals to client
-    uiInterface.ShowProgress.connect(boost::bind(ShowProgress, this, _1, _2));
+    uiInterface.NotifyBlocksChanged.connect(boost::bind(NotifyBlocksChanged, this));
     uiInterface.NotifyNumConnectionsChanged.connect(boost::bind(NotifyNumConnectionsChanged, this, _1));
     uiInterface.NotifyAlertChanged.connect(boost::bind(NotifyAlertChanged, this, _1, _2));
 }
@@ -236,7 +231,7 @@ void ClientModel::subscribeToCoreSignals()
 void ClientModel::unsubscribeFromCoreSignals()
 {
     // Disconnect signals from client
-    uiInterface.ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2));
+    uiInterface.NotifyBlocksChanged.disconnect(boost::bind(NotifyBlocksChanged, this));
     uiInterface.NotifyNumConnectionsChanged.disconnect(boost::bind(NotifyNumConnectionsChanged, this, _1));
     uiInterface.NotifyAlertChanged.disconnect(boost::bind(NotifyAlertChanged, this, _1, _2));
 }

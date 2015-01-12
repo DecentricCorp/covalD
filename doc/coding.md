@@ -1,40 +1,47 @@
 Coding
 ====================
 
-Various coding styles have been used during the history of the codebase,
-and the result is not very consistent. However, we're now trying to converge to
-a single style, so please use it in new code. Old code will be converted
-gradually.
-- Basic rules specified in src/.clang-format. Use a recent clang-format-3.5 to format automatically.
-  - Braces on new lines for namespaces, classes, functions, methods.
-  - Braces on the same line for everything else.
-  - 4 space indentation (no tabs) for every block except namespaces.
-  - No indentation for public/protected/private or for namespaces.
-  - No extra spaces inside parenthesis; don't do ( this )
-  - No space after function names; one space after if, for and while.
+Please be consistent with the existing coding style.
 
-Block style example:
-```c++
-namespace foo
-{
-class Class
-{
-    bool Function(char* psz, int n)
-    {
-        // Comment summarising what this section of code does
-        for (int i = 0; i < n; i++) {
-            // When something fails, return early
-            if (!Something())
-                return false;
-            ...
-        }
+Block style:
 
-        // Success return is usually at the end
-        return true;
-    }
-}
-}
-```
+	bool Function(char* psz, int n)
+	{
+	    // Comment summarising what this section of code does
+	    for (int i = 0; i < n; i++)
+	    {
+	        // When something fails, return early
+	        if (!Something())
+	            return false;
+	        ...
+	    }
+	
+	    // Success return is usually at the end
+	    return true;
+	}
+
+- ANSI/Allman block style
+- 4 space indenting, no tabs
+- No extra spaces inside parenthesis; please don't do ( this )
+- No space after function names, one space after if, for and while
+
+Variable names begin with the type in lowercase, like nSomeVariable.
+Please don't put the first word of the variable name in lowercase like
+someVariable.
+
+Common types:
+
+	n       integer number: short, unsigned short, int, unsigned int, int64, uint64, sometimes char if used as a number
+	d       double, float
+	f       flag
+	hash    uint256
+	p       pointer or array, one p for each level of indirection
+	psz     pointer to null terminated string
+	str     string object
+	v       vector or similar list objects
+	map     map or multimap
+	set     set or multiset
+	bn      CBigNum
 
 Doxygen comments
 -----------------
@@ -115,11 +122,13 @@ Threads
 
 - StartNode : Starts other threads.
 
+- ThreadGetMyExternalIP : Determines outside-the-firewall IP address, sends addr message to connected peers when it determines it.
+
 - ThreadDNSAddressSeed : Loads addresses of peers from the DNS.
 
 - ThreadMapPort : Universal plug-and-play startup/shutdown
 
-- ThreadSocketHandler : Sends/Receives data from peers on port 3764.
+- ThreadSocketHandler : Sends/Receives data from peers on port 8333.
 
 - ThreadOpenAddedConnections : Opens network connections to added nodes.
 
@@ -131,7 +140,7 @@ Threads
 
 - ThreadFlushWalletDB : Close the wallet.dat file if it hasn't been used in 500ms.
 
-- ThreadRPCServer : Remote procedure call handler, listens on port 3763 for connections and services them.
+- ThreadRPCServer : Remote procedure call handler, listens on port 8332 for connections and services them.
 
 - BitcoinMiner : Generates bitcoins (if wallet is enabled).
 

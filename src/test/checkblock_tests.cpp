@@ -6,11 +6,9 @@
 // Unit tests for block.CheckBlock()
 //
 
+#include "auxpow.h"
 
-
-#include "clientversion.h"
 #include "main.h"
-#include "utiltime.h"
 
 #include <cstdio>
 
@@ -36,8 +34,8 @@ bool read_block(const std::string& filename, CBlock& block)
 
     fseek(fp, 8, SEEK_SET); // skip msgheader/size
 
-    CAutoFile filein(fp, SER_DISK, CLIENT_VERSION);
-    if (filein.IsNull()) return false;
+    CAutoFile filein = CAutoFile(fp, SER_DISK, CLIENT_VERSION);
+    if (!filein) return false;
 
     filein >> block;
 

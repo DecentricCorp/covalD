@@ -2,8 +2,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_WALLETMODELTRANSACTION_H
-#define BITCOIN_QT_WALLETMODELTRANSACTION_H
+#ifndef WALLETMODELTRANSACTION_H
+#define WALLETMODELTRANSACTION_H
 
 #include "walletmodel.h"
 
@@ -25,12 +25,11 @@ public:
     QList<SendCoinsRecipient> getRecipients();
 
     CWalletTx *getTransaction();
-    unsigned int getTransactionSize();
 
-    void setTransactionFee(const CAmount& newFee);
-    CAmount getTransactionFee();
+    void setTransactionFee(qint64 newFee);
+    qint64 getTransactionFee();
 
-    CAmount getTotalTransactionAmount();
+    qint64 getTotalTransactionAmount();
 
     void newPossibleKeyChange(CWallet *wallet);
     CReserveKey *getPossibleKeyChange();
@@ -39,7 +38,7 @@ private:
     const QList<SendCoinsRecipient> recipients;
     CWalletTx *walletTransaction;
     CReserveKey *keyChange;
-    CAmount fee;
+    qint64 fee;
 };
 
-#endif // BITCOIN_QT_WALLETMODELTRANSACTION_H
+#endif // WALLETMODELTRANSACTION_H

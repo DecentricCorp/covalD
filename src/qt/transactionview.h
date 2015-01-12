@@ -2,13 +2,12 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_TRANSACTIONVIEW_H
-#define BITCOIN_QT_TRANSACTIONVIEW_H
+#ifndef TRANSACTIONVIEW_H
+#define TRANSACTIONVIEW_H
 
 #include "guiutil.h"
 
 #include <QWidget>
-#include <QKeyEvent>
 
 class TransactionFilterProxy;
 class WalletModel;
@@ -50,7 +49,6 @@ public:
 
     enum ColumnWidths {
         STATUS_COLUMN_WIDTH = 23,
-        WATCHONLY_COLUMN_WIDTH = 23,
         DATE_COLUMN_WIDTH = 120,
         TYPE_COLUMN_WIDTH = 120,
         AMOUNT_MINIMUM_COLUMN_WIDTH = 120,
@@ -64,7 +62,6 @@ private:
 
     QComboBox *dateWidget;
     QComboBox *typeWidget;
-    QComboBox *watchOnlyWidget;
     QLineEdit *addressWidget;
     QLineEdit *amountWidget;
 
@@ -81,8 +78,6 @@ private:
 
     virtual void resizeEvent(QResizeEvent* event);
 
-    bool eventFilter(QObject *obj, QEvent *event);
-
 private slots:
     void contextualMenu(const QPoint &);
     void dateRangeChanged();
@@ -93,7 +88,6 @@ private slots:
     void copyAmount();
     void copyTxID();
     void openThirdPartyTxUrl(QString url);
-    void updateWatchOnlyColumn(bool fHaveWatchOnly);
 
 signals:
     void doubleClicked(const QModelIndex&);
@@ -104,7 +98,6 @@ signals:
 public slots:
     void chooseDate(int idx);
     void chooseType(int idx);
-    void chooseWatchonly(int idx);
     void changedPrefix(const QString &prefix);
     void changedAmount(const QString &amount);
     void exportClicked();
@@ -112,4 +105,4 @@ public slots:
 
 };
 
-#endif // BITCOIN_QT_TRANSACTIONVIEW_H
+#endif // TRANSACTIONVIEW_H

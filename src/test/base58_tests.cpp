@@ -9,10 +9,9 @@
 #include "data/base58_keys_valid.json.h"
 
 #include "key.h"
-#include "script/script.h"
+#include "script.h"
 #include "uint256.h"
 #include "util.h"
-#include "utilstrencodings.h"
 
 #include <boost/foreach.hpp>
 #include <boost/test/unit_test.hpp>
@@ -41,7 +40,7 @@ BOOST_AUTO_TEST_CASE(base58_EncodeBase58)
         std::vector<unsigned char> sourcedata = ParseHex(test[0].get_str());
         std::string base58string = test[1].get_str();
         BOOST_CHECK_MESSAGE(
-                    EncodeBase58(begin_ptr(sourcedata), end_ptr(sourcedata)) == base58string,
+                    EncodeBase58(&sourcedata[0], &sourcedata[sourcedata.size()]) == base58string,
                     strTest);
     }
 }
@@ -143,9 +142,9 @@ BOOST_AUTO_TEST_CASE(base58_keys_valid_parse)
         bool isPrivkey = find_value(metadata, "isPrivkey").get_bool();
         bool isTestnet = find_value(metadata, "isTestnet").get_bool();
         if (isTestnet)
-            SelectParams(CBaseChainParams::TESTNET);
+            SelectParams(CChainParams::TESTNET);
         else
-            SelectParams(CBaseChainParams::MAIN);
+            SelectParams(CChainParams::MAIN);
         if(isPrivkey)
         {
             bool isCompressed = find_value(metadata, "isCompressed").get_bool();
@@ -176,7 +175,7 @@ BOOST_AUTO_TEST_CASE(base58_keys_valid_parse)
             BOOST_CHECK_MESSAGE(!secret.IsValid(), "IsValid pubkey as privkey:" + strTest);
         }
     }
-    SelectParams(CBaseChainParams::UNITTEST);
+    SelectParams(CChainParams::MAIN);
 }
 
 // Goal: check that generated keys match test vectors
@@ -199,9 +198,9 @@ BOOST_AUTO_TEST_CASE(base58_keys_valid_gen)
         bool isPrivkey = find_value(metadata, "isPrivkey").get_bool();
         bool isTestnet = find_value(metadata, "isTestnet").get_bool();
         if (isTestnet)
-            SelectParams(CBaseChainParams::TESTNET);
+            SelectParams(CChainParams::TESTNET);
         else
-            SelectParams(CBaseChainParams::MAIN);
+            SelectParams(CChainParams::MAIN);
         if(isPrivkey)
         {
             bool isCompressed = find_value(metadata, "isCompressed").get_bool();
@@ -244,7 +243,7 @@ BOOST_AUTO_TEST_CASE(base58_keys_valid_gen)
     CTxDestination nodest = CNoDestination();
     BOOST_CHECK(!dummyAddr.Set(nodest));
 
-    SelectParams(CBaseChainParams::UNITTEST);
+    SelectParams(CChainParams::MAIN);
 }
 
 // Goal: check that base58 parsing code is robust against a variety of corrupted data

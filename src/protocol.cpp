@@ -5,9 +5,7 @@
 
 #include "protocol.h"
 
-#include "chainparams.h"
 #include "util.h"
-#include "utilstrencodings.h"
 
 #ifndef WIN32
 # include <arpa/inet.h>
@@ -25,6 +23,7 @@ CMessageHeader::CMessageHeader()
 {
     memcpy(pchMessageStart, Params().MessageStart(), MESSAGE_START_SIZE);
     memset(pchCommand, 0, sizeof(pchCommand));
+    pchCommand[1] = 1;
     nMessageSize = -1;
     nChecksum = 0;
 }
@@ -32,7 +31,6 @@ CMessageHeader::CMessageHeader()
 CMessageHeader::CMessageHeader(const char* pszCommand, unsigned int nMessageSizeIn)
 {
     memcpy(pchMessageStart, Params().MessageStart(), MESSAGE_START_SIZE);
-    memset(pchCommand, 0, sizeof(pchCommand));
     strncpy(pchCommand, pszCommand, COMMAND_SIZE);
     nMessageSize = nMessageSizeIn;
     nChecksum = 0;
@@ -40,7 +38,10 @@ CMessageHeader::CMessageHeader(const char* pszCommand, unsigned int nMessageSize
 
 std::string CMessageHeader::GetCommand() const
 {
-    return std::string(pchCommand, pchCommand + strnlen(pchCommand, COMMAND_SIZE));
+    if (pchCommand[COMMAND_SIZE-1] == 0)
+        return std::string(pchCommand, pchCommand + strlen(pchCommand));
+    else
+        return std::string(pchCommand, pchCommand + COMMAND_SIZE);
 }
 
 bool CMessageHeader::IsValid() const
@@ -142,3 +143,9 @@ std::string CInv::ToString() const
 {
     return strprintf("%s %s", GetCommand(), hash.ToString());
 }
+
+void CInv::print() const
+{
+    LogPrintf("CInv(%s)\n", ToString());
+}
+

@@ -16,8 +16,7 @@ BOOST_AUTO_TEST_SUITE(getarg_tests)
 static void ResetArgs(const std::string& strArg)
 {
     std::vector<std::string> vecArg;
-    if (strArg.size())
-      boost::split(vecArg, strArg, boost::is_space(), boost::token_compress_on);
+    boost::split(vecArg, strArg, boost::is_space(), boost::token_compress_on);
 
     // Insert dummy executable name:
     vecArg.insert(vecArg.begin(), "testbitcoin");

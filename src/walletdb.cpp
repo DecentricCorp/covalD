@@ -9,17 +9,14 @@
 #include "protocol.h"
 #include "serialize.h"
 #include "sync.h"
-#include "util.h"
-#include "utiltime.h"
 #include "wallet.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/thread.hpp>
 
-using namespace boost;
 using namespace std;
+using namespace boost;
+
 
 static uint64_t nAccountingEntryNumber = 0;
 
@@ -115,18 +112,6 @@ bool CWalletDB::WriteCScript(const uint160& hash, const CScript& redeemScript)
     return Write(std::make_pair(std::string("cscript"), hash), redeemScript, false);
 }
 
-bool CWalletDB::WriteWatchOnly(const CScript &dest)
-{
-    nWalletDBUpdated++;
-    return Write(std::make_pair(std::string("watchs"), dest), '1');
-}
-
-bool CWalletDB::EraseWatchOnly(const CScript &dest)
-{
-    nWalletDBUpdated++;
-    return Erase(std::make_pair(std::string("watchs"), dest));
-}
-
 bool CWalletDB::WriteBestBlock(const CBlockLocator& locator)
 {
     nWalletDBUpdated++;
@@ -185,7 +170,7 @@ bool CWalletDB::WriteAccount(const string& strAccount, const CAccount& account)
 
 bool CWalletDB::WriteAccountingEntry(const uint64_t nAccEntryNum, const CAccountingEntry& acentry)
 {
-    return Write(std::make_pair(std::string("acentry"), std::make_pair(acentry.strAccount, nAccEntryNum)), acentry);
+    return Write(boost::make_tuple(string("acentry"), acentry.strAccount, nAccEntryNum), acentry);
 }
 
 bool CWalletDB::WriteAccountingEntry(const CAccountingEntry& acentry)
@@ -193,12 +178,12 @@ bool CWalletDB::WriteAccountingEntry(const CAccountingEntry& acentry)
     return WriteAccountingEntry(++nAccountingEntryNumber, acentry);
 }
 
-CAmount CWalletDB::GetAccountCreditDebit(const string& strAccount)
+int64_t CWalletDB::GetAccountCreditDebit(const string& strAccount)
 {
     list<CAccountingEntry> entries;
     ListAccountCreditDebit(strAccount, entries);
 
-    CAmount nCreditDebit = 0;
+    int64_t nCreditDebit = 0;
     BOOST_FOREACH (const CAccountingEntry& entry, entries)
         nCreditDebit += entry.nCreditDebit;
 
@@ -218,7 +203,7 @@ void CWalletDB::ListAccountCreditDebit(const string& strAccount, list<CAccountin
         // Read next record
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         if (fFlags == DB_SET_RANGE)
-            ssKey << std::make_pair(std::string("acentry"), std::make_pair((fAllAccounts ? string("") : strAccount), uint64_t(0)));
+            ssKey << boost::make_tuple(string("acentry"), (fAllAccounts? string("") : strAccount), uint64_t(0));
         CDataStream ssValue(SER_DISK, CLIENT_VERSION);
         int ret = ReadAtCursor(pcursor, ssKey, ssValue, fFlags);
         fFlags = DB_NEXT;
@@ -248,7 +233,9 @@ void CWalletDB::ListAccountCreditDebit(const string& strAccount, list<CAccountin
     pcursor->close();
 }
 
-DBErrors CWalletDB::ReorderTransactions(CWallet* pwallet)
+
+DBErrors
+CWalletDB::ReorderTransactions(CWallet* pwallet)
 {
     LOCK(pwallet->cs_wallet);
     // Old wallets didn't have any defined order for transactions
@@ -285,12 +272,8 @@ DBErrors CWalletDB::ReorderTransactions(CWallet* pwallet)
             nOrderPos = nOrderPosNext++;
             nOrderPosOffsets.push_back(nOrderPos);
 
-            if (pwtx)
-            {
-                if (!WriteTx(pwtx->GetHash(), *pwtx))
-                    return DB_LOAD_FAIL;
-            }
-            else
+            if (pacentry)
+                // Have to write accounting regardless, since we don't keep it in memory
                 if (!WriteAccountingEntry(pacentry->nEntryNo, *pacentry))
                     return DB_LOAD_FAIL;
         }
@@ -319,7 +302,6 @@ DBErrors CWalletDB::ReorderTransactions(CWallet* pwallet)
                     return DB_LOAD_FAIL;
         }
     }
-    WriteOrderPosNext(nOrderPosNext);
 
     return DB_LOAD_OK;
 }
@@ -397,6 +379,13 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
                 wss.fAnyUnordered = true;
 
             pwallet->AddToWallet(wtx, true);
+            //// debug print
+            //LogPrintf("LoadWallet  %s\n", wtx.GetHash().ToString());
+            //LogPrintf(" %12d  %s  %s  %s\n",
+            //    wtx.vout[0].nValue,
+            //    DateTimeStrFormat("%Y-%m-%d %H:%M:%S", wtx.GetBlockTime()),
+            //    wtx.hashBlock.ToString(),
+            //    wtx.mapValue["message"]);
         }
         else if (strType == "acentry")
         {
@@ -414,19 +403,6 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
                 if (acentry.nOrderPos == -1)
                     wss.fAnyUnordered = true;
             }
-        }
-        else if (strType == "watchs")
-        {
-            CScript script;
-            ssKey >> script;
-            char fYes;
-            ssValue >> fYes;
-            if (fYes == '1')
-                pwallet->LoadWatchOnly(script);
-
-            // Watch-only addresses have no birthday information for now,
-            // so set the wallet birthday to the beginning of time.
-            pwallet->nTimeFirstKey = 1;
         }
         else if (strType == "key" || strType == "wkey")
         {
@@ -704,9 +680,10 @@ DBErrors CWalletDB::LoadWallet(CWallet* pwallet)
     return result;
 }
 
-DBErrors CWalletDB::FindWalletTx(CWallet* pwallet, vector<uint256>& vTxHash, vector<CWalletTx>& vWtx)
+DBErrors CWalletDB::FindWalletTx(CWallet* pwallet, vector<uint256>& vTxHash)
 {
     pwallet->vchDefaultKey = CPubKey();
+    CWalletScanState wss;
     bool fNoncriticalErrors = false;
     DBErrors result = DB_LOAD_OK;
 
@@ -748,11 +725,7 @@ DBErrors CWalletDB::FindWalletTx(CWallet* pwallet, vector<uint256>& vTxHash, vec
                 uint256 hash;
                 ssKey >> hash;
 
-                CWalletTx wtx;
-                ssValue >> wtx;
-
                 vTxHash.push_back(hash);
-                vWtx.push_back(wtx);
             }
         }
         pcursor->close();
@@ -770,11 +743,11 @@ DBErrors CWalletDB::FindWalletTx(CWallet* pwallet, vector<uint256>& vTxHash, vec
     return result;
 }
 
-DBErrors CWalletDB::ZapWalletTx(CWallet* pwallet, vector<CWalletTx>& vWtx)
+DBErrors CWalletDB::ZapWalletTx(CWallet* pwallet)
 {
     // build list of wallet TXs
     vector<uint256> vTxHash;
-    DBErrors err = FindWalletTx(pwallet, vTxHash, vWtx);
+    DBErrors err = FindWalletTx(pwallet, vTxHash);
     if (err != DB_LOAD_OK)
         return err;
 
@@ -924,7 +897,7 @@ bool CWalletDB::Recover(CDBEnv& dbenv, std::string filename, bool fOnlyKeys)
     LogPrintf("Salvage(aggressive) found %u records\n", salvagedData.size());
 
     bool fSuccess = allOK;
-    boost::scoped_ptr<Db> pdbCopy(new Db(&dbenv.dbenv, 0));
+    Db* pdbCopy = new Db(&dbenv.dbenv, 0);
     int ret = pdbCopy->open(NULL,               // Txn pointer
                             filename.c_str(),   // Filename
                             "main",             // Logical db name
@@ -965,6 +938,7 @@ bool CWalletDB::Recover(CDBEnv& dbenv, std::string filename, bool fOnlyKeys)
     }
     ptxn->commit(0);
     pdbCopy->close(0);
+    delete pdbCopy;
 
     return fSuccess;
 }
@@ -977,11 +951,11 @@ bool CWalletDB::Recover(CDBEnv& dbenv, std::string filename)
 bool CWalletDB::WriteDestData(const std::string &address, const std::string &key, const std::string &value)
 {
     nWalletDBUpdated++;
-    return Write(std::make_pair(std::string("destdata"), std::make_pair(address, key)), value);
+    return Write(boost::make_tuple(std::string("destdata"), address, key), value);
 }
 
 bool CWalletDB::EraseDestData(const std::string &address, const std::string &key)
 {
     nWalletDBUpdated++;
-    return Erase(std::make_pair(std::string("destdata"), std::make_pair(address, key)));
+    return Erase(boost::make_tuple(string("destdata"), address, key));
 }

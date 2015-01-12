@@ -1,10 +1,9 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
-// Distributed under the MIT software license, see the accompanying
+// Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_PAYMENTSERVER_H
-#define BITCOIN_QT_PAYMENTSERVER_H
-
+#ifndef PAYMENTSERVER_H
+#define PAYMENTSERVER_H
 // This class handles payment requests from clicking on
 // bitcoin: URIs
 //
@@ -40,8 +39,6 @@
 
 class OptionsModel;
 
-class CWallet;
-
 QT_BEGIN_NAMESPACE
 class QApplication;
 class QByteArray;
@@ -52,8 +49,7 @@ class QSslError;
 class QUrl;
 QT_END_NAMESPACE
 
-// BIP70 max payment request size in bytes (DoS protection)
-extern const qint64 BIP70_MAX_PAYMENTREQUEST_SIZE;
+class CWallet;
 
 class PaymentServer : public QObject
 {
@@ -62,7 +58,7 @@ class PaymentServer : public QObject
 public:
     // Parse URIs on command line
     // Returns false on error
-    static void ipcParseCommandLine(int argc, char *argv[]);
+    static bool ipcParseCommandLine(int argc, char *argv[]);
 
     // Returns true if there were URIs on the command line
     // which were successfully sent to an already-running
@@ -87,9 +83,6 @@ public:
 
     // OptionsModel is used for getting proxy settings and display unit
     void setOptionsModel(OptionsModel *optionsModel);
-
-    // This is now public, because we use it in paymentservertests.cpp
-    static bool readPaymentRequestFromFile(const QString& filename, PaymentRequestPlus& request);
 
 signals:
     // Fired when a valid payment request is received
@@ -124,6 +117,7 @@ protected:
     bool eventFilter(QObject *object, QEvent *event);
 
 private:
+    static bool readPaymentRequest(const QString& filename, PaymentRequestPlus& request);
     bool processPaymentRequest(PaymentRequestPlus& request, SendCoinsRecipient& recipient);
     void fetchRequest(const QUrl& url);
 
@@ -141,4 +135,4 @@ private:
     OptionsModel *optionsModel;
 };
 
-#endif // BITCOIN_QT_PAYMENTSERVER_H
+#endif // PAYMENTSERVER_H

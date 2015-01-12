@@ -2,11 +2,9 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "merkleblock.h"
+#include "main.h"
 #include "serialize.h"
-#include "streams.h"
 #include "uint256.h"
-#include "version.h"
 
 #include <vector>
 
@@ -38,9 +36,9 @@ BOOST_AUTO_TEST_CASE(pmt_test1)
         // build a block with some dummy transactions
         CBlock block;
         for (unsigned int j=0; j<nTx; j++) {
-            CMutableTransaction tx;
+            CTransaction tx;
             tx.nLockTime = rand(); // actual transaction data doesn't matter; just make the nLockTime's unique
-            block.vtx.push_back(CTransaction(tx));
+            block.vtx.push_back(tx);
         }
 
         // calculate actual merkle root and height

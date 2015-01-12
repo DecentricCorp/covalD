@@ -7,29 +7,32 @@
 #define BITCOIN_MINER_H
 
 #include <stdint.h>
-#include "pow.h"
+#include "auxpow.h"
 
 class CBlock;
-class CBlockHeader;
 class CBlockIndex;
+struct CBlockTemplate;
 class CReserveKey;
 class CScript;
 class CWallet;
-
-struct CBlockTemplate;
+class CAuxPow;
 
 /** Run the miner threads */
 void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads);
 /** Generate a new block, without valid proof-of-work */
-CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo=ALGO_SHA256D);
-CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey, int algo=ALGO_SHA256D);
+CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo);
+CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey, int algo);
 /** Modify the extranonce in a block */
 void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce);
+void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce, std::vector<unsigned char>& vchAux);
+/** Do mining precalculation */
+void FormatHashBuffers(CBlock* pblock, char* pmidstate, char* pdata, char* phash1);
 /** Check mined block */
 bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
-void UpdateTime(CBlockHeader* block, const CBlockIndex* pindexPrev);
+/** Base sha256 mining transform */
+void SHA256Transform(void* pstate, void* pinput, const void* pinit);
 
-extern double dHashesPerSec[NUM_ALGOS];
-extern int64_t nHPSTimerStart[NUM_ALGOS];
+extern double dHashesPerSec;
+extern int64_t nHPSTimerStart;
 
 #endif // BITCOIN_MINER_H

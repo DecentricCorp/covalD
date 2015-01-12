@@ -39,9 +39,8 @@ try:
 except ImportError:
     import httplib
 import base64
-import decimal
 import json
-import logging
+import decimal
 try:
     import urllib.parse as urlparse
 except ImportError:
@@ -51,7 +50,6 @@ USER_AGENT = "AuthServiceProxy/0.1"
 
 HTTP_TIMEOUT = 30
 
-log = logging.getLogger("BitcoinRPC")
 
 class JSONRPCException(Exception):
     def __init__(self, rpc_error):
@@ -59,14 +57,7 @@ class JSONRPCException(Exception):
         self.error = rpc_error
 
 
-def EncodeDecimal(o):
-    if isinstance(o, decimal.Decimal):
-        return round(o, 8)
-    raise TypeError(repr(o) + " is not JSON serializable")
-
 class AuthServiceProxy(object):
-    __id_count = 0
-
     def __init__(self, service_url, service_name=None, timeout=HTTP_TIMEOUT, connection=None):
         self.__service_url = service_url
         self.__service_name = service_name
@@ -75,6 +66,7 @@ class AuthServiceProxy(object):
             port = 80
         else:
             port = self.__url.port
+        self.__id_count = 0
         (user, passwd) = (self.__url.username, self.__url.password)
         try:
             user = user.encode('utf8')
@@ -107,14 +99,12 @@ class AuthServiceProxy(object):
         return AuthServiceProxy(self.__service_url, name, connection=self.__conn)
 
     def __call__(self, *args):
-        AuthServiceProxy.__id_count += 1
+        self.__id_count += 1
 
-        log.debug("-%s-> %s %s"%(AuthServiceProxy.__id_count, self.__service_name,
-                                 json.dumps(args, default=EncodeDecimal)))
         postdata = json.dumps({'version': '1.1',
                                'method': self.__service_name,
                                'params': args,
-                               'id': AuthServiceProxy.__id_count}, default=EncodeDecimal)
+                               'id': self.__id_count})
         self.__conn.request('POST', self.__url.path, postdata,
                             {'Host': self.__url.hostname,
                              'User-Agent': USER_AGENT,
@@ -131,8 +121,7 @@ class AuthServiceProxy(object):
             return response['result']
 
     def _batch(self, rpc_call_list):
-        postdata = json.dumps(list(rpc_call_list), default=EncodeDecimal)
-        log.debug("--> "+postdata)
+        postdata = json.dumps(list(rpc_call_list))
         self.__conn.request('POST', self.__url.path, postdata,
                             {'Host': self.__url.hostname,
                              'User-Agent': USER_AGENT,
@@ -147,10 +136,5 @@ class AuthServiceProxy(object):
             raise JSONRPCException({
                 'code': -342, 'message': 'missing HTTP response from server'})
 
-        responsedata = http_response.read().decode('utf8')
-        response = json.loads(responsedata, parse_float=decimal.Decimal)
-        if "error" in response and response["error"] is None:
-            log.debug("<-%s- %s"%(response["id"], json.dumps(response["result"], default=EncodeDecimal)))
-        else:
-            log.debug("<-- "+responsedata)
-        return response
+        return json.loads(http_response.read().decode('utf8'),
+                          parse_float=decimal.Decimal)

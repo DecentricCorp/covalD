@@ -1,4 +1,7 @@
-<TS language="es_UY" version="2.0">
+<TS language="es_UY" version="2.1">
+<context>
+    <name>AboutDialog</name>
+    </context>
 <context>
     <name>AddressBookPage</name>
     <message>
@@ -50,6 +53,10 @@
     <message>
         <source>Repeat new passphrase</source>
         <translation>Repetir nueva contraseña</translation>
+    </message>
+    <message>
+        <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;10 or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
+        <translation>Introduzca la nueva contraseña para el monedero. &lt;br/&gt; Utilice una contraseña de &lt;b&gt; 10 o más caracteres al azar &lt;/ b&gt;, o &lt;b&gt; ocho o más palabras &lt;/ b&gt;.</translation>
     </message>
     <message>
         <source>Encrypt wallet</source>
@@ -139,6 +146,10 @@
         <translation>Salir de la aplicacion </translation>
     </message>
     <message>
+        <source>Show information about Bitcoin</source>
+        <translation>Mostrar informacion sobre Bitcoin</translation>
+    </message>
+    <message>
         <source>&amp;Options...</source>
         <translation>&amp;Opciones...</translation>
     </message>
@@ -161,6 +172,10 @@
     <message>
         <source>Tabs toolbar</source>
         <translation>Barra de herramientas</translation>
+    </message>
+    <message>
+        <source>[testnet]</source>
+        <translation>[prueba_de_red]</translation>
     </message>
     <message numerus="yes">
         <source>%n active connection(s) to Bitcoin network</source>
@@ -190,12 +205,16 @@
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
         <translation>El Monedero esta &lt;b&gt;cifrado&lt;/b&gt; y actualmente &lt;b&gt;bloqueado&lt;/b&gt;</translation>
     </message>
-</context>
+    </context>
 <context>
     <name>ClientModel</name>
     </context>
 <context>
     <name>CoinControlDialog</name>
+    <message>
+        <source>Address</source>
+        <translation>Direccion </translation>
+    </message>
     <message>
         <source>Date</source>
         <translation>Fecha</translation>
@@ -269,12 +288,13 @@
         <source>Form</source>
         <translation>Formulario</translation>
     </message>
+    <message>
+        <source>&lt;b&gt;Recent transactions&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Transacciones recientes&lt;/b&gt;</translation>
+    </message>
     </context>
 <context>
     <name>PaymentServer</name>
-    </context>
-<context>
-    <name>PeerTableModel</name>
     </context>
 <context>
     <name>QObject</name>
@@ -459,9 +479,6 @@
         <source>Address</source>
         <translation>Direccion </translation>
     </message>
-    </context>
-<context>
-    <name>UnitDisplayStatusBarControl</name>
     </context>
 <context>
     <name>WalletFrame</name>

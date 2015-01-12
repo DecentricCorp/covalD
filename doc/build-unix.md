@@ -2,49 +2,43 @@ UNIX BUILD NOTES
 ====================
 Some notes on how to build Bitcoin in Unix. 
 
-Note
----------------------
-Always use absolute paths to configure and compile bitcoin and the dependencies,
-for example, when specifying the the path of the dependency:
-
-	../dist/configure --enable-cxx --disable-shared --with-pic --prefix=$BDB_PREFIX
-
-Here BDB_PREFIX must absolute path - it is defined using $(pwd) which ensures
-the usage of the absolute path.
-
 To Build
 ---------------------
 
-```bash
-./autogen.sh
-./configure --with-gui=qt5 --with-incompatible-bdb
-make
-make install # optional
-```
+	./autogen.sh
+	./configure
+	make
 
 This will build bitcoin-qt as well if the dependencies are met.
 
 Dependencies
 ---------------------
 
-These dependencies are required:
-
  Library     | Purpose          | Description
  ------------|------------------|----------------------
  libssl      | SSL Support      | Secure communications
+ libdb4.8    | Berkeley DB      | Wallet storage
  libboost    | Boost            | C++ Library
+ miniupnpc   | UPnP Support     | Optional firewall-jumping support
+ qt          | GUI              | GUI toolkit
+ protobuf    | Payments in GUI  | Data interchange format used for payment protocol
+ libqrencode | QR codes in GUI  | Optional for generating QR codes
 
-Optional dependencies:
+[miniupnpc](http://miniupnp.free.fr/) may be used for UPnP port mapping.  It can be downloaded from [here](
+http://miniupnp.tuxfamily.org/files/).  UPnP support is compiled in and
+turned off by default.  See the configure options for upnp behavior desired:
 
- Library     | Purpose          | Description
- ------------|------------------|----------------------
- miniupnpc   | UPnP Support     | Firewall-jumping support
- libdb4.8    | Berkeley DB      | Wallet storage (only needed when wallet enabled)
- qt          | GUI              | GUI toolkit (only needed when GUI enabled)
- protobuf    | Payments in GUI  | Data interchange format used for payment protocol (only needed when GUI enabled)
- libqrencode | QR codes in GUI  | Optional for generating QR codes (only needed when GUI enabled)
+	--without-miniupnpc      No UPnP support miniupnp not required
+	--disable-upnp-default   (the default) UPnP support turned off by default at runtime
+	--enable-upnp-default    UPnP support turned on by default at runtime
 
-For the versions used in the release, see [release-process.md](release-process.md) under *Fetch and build inputs*.
+Licenses of statically linked libraries:
+ Berkeley DB   New BSD license with additional requirement that linked
+               software must be free open source
+ Boost         MIT-like license
+ miniupnpc     New (3-clause) BSD license
+
+- For the versions used in the release, see doc/release-process.md under *Fetch and build inputs*.
 
 System requirements
 --------------------
@@ -57,9 +51,11 @@ Dependency Build Instructions: Ubuntu & Debian
 ----------------------------------------------
 Build requirements:
 
-	sudo apt-get install build-essential libtool autotools-dev autoconf pkg-config libssl-dev
-	
-for Ubuntu 12.04 and later or Debian 7 and later libboost-all-dev has to be installed:
+	sudo apt-get install build-essential
+	sudo apt-get install libtool autotools-dev autoconf
+	sudo apt-get install libssl-dev
+
+for Ubuntu 12.04 and later:
 
 	sudo apt-get install libboost-all-dev
 
@@ -83,9 +79,10 @@ To enable the change run
 
 	sudo apt-get update
 
-for other Debian & Ubuntu (with ppa):
+for other Ubuntu & Debian:
 
-	sudo apt-get install libdb4.8-dev libdb4.8++-dev
+	sudo apt-get install libdb4.8-dev
+	sudo apt-get install libdb4.8++-dev
 
 Optional:
 
@@ -105,7 +102,7 @@ To build with Qt 4 you need the following:
 
 For Qt 5 you need the following:
 
-    sudo apt-get install libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler
+    sudo apt-get install libqt5gui5 libqt5core5 libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev
 
 libqrencode (optional) can be installed with:
 
@@ -122,17 +119,6 @@ symbols, which reduces the executable size by about 90%.
 
 miniupnpc
 ---------
-
-[miniupnpc](http://miniupnp.free.fr/) may be used for UPnP port mapping.  It can be downloaded from [here](
-http://miniupnp.tuxfamily.org/files/).  UPnP support is compiled in and
-turned off by default.  See the configure options for upnp behavior desired:
-
-	--without-miniupnpc      No UPnP support miniupnp not required
-	--disable-upnp-default   (the default) UPnP support turned off by default at runtime
-	--enable-upnp-default    UPnP support turned on by default at runtime
-
-To build:
-
 	tar -xzvf miniupnpc-1.6.tar.gz
 	cd miniupnpc-1.6
 	make

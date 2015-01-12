@@ -1,120 +1,36 @@
-Bitcoin Core integration/staging tree
-=====================================
+*Unitus = United*
 
-[![Build Status](https://travis-ci.org/bitcoin/bitcoin.svg?branch=master)](https://travis-ci.org/bitcoin/bitcoin)
+1. Joined into a single entity.
+2. Involving the joint activity of multiple agents.
 
-https://www.bitcoin.org
 
-What is Bitcoin?
-----------------
+Unitus is about bringing together smaller crypto-currencies and the communities that support them into a larger group capable of greater change, influence and innovation, whilst allowing each to maintain their own unique identities.
 
-Bitcoin is an experimental new digital currency that enables instant payments to
-anyone, anywhere in the world. Bitcoin uses peer-to-peer technology to operate
-with no central authority: managing transactions and issuing money are carried
-out collectively by the network. Bitcoin Core is the name of open source
-software which enables the use of this currency.
+Every aspect of this project will be driven by the community, for the community.
 
-For more information, as well as an immediately useable, binary version of
-the Bitcoin Core software, see https://www.bitcoin.org/en/download.
+**Specifications**
 
-License
--------
+* _Modern Wallet_ - Forked from Bitcoin Core 0.9.3, with significant influence from Myriadcoin (Multi-Algorithm) and Dogecoin (Merge-Mining)
+* _Multi-Algorithm_:
+  * Blake256 (8-round)
+  * Skein
+  * Qubit
+  * X11
+  * Yescrypt
+* All algorithms can be merge-mined (AuxPoW)
+* Each algorithm will have a 5 minute block time, resulting in a 1 minute block time for the whole network
+* Difficulty Retargeting:
+  * Each algorithm re-targets every block for that algorithm
+  * Uses average block time for past 10 blocks to alter difficulty towards 5 minutes
+  * Maximum change of 5% up or down during normal mining phase, but first 1999 blocks allow 20% change up or down
+* Fair Distribution:
+  * No Premine / IPO / ICO / Developer Donation. Just pure miner reward
+  * First 2,000 blocks increase from 1 UIS to 100 UIS (approx. 33 Hours) - total 31,799 UIS
+  * Every 7 days / 10,080 blocks thereafter the reward decays by 1% (compound)
+  * Decay continues until we reach 2 UIS (approx. June 2022, block 3,933,199, total 98,830,980 UIS) - and then this remains static for each block thereafter
+  * Mined blocks mature after 180 confirmations
+* No free transactions - minimum fee is 0.01 UIS
+* Peer-to-Peer Port: 50603
+* RPC Port: 50604
 
-Bitcoin Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
-information or see http://opensource.org/licenses/MIT.
 
-Development process
--------------------
-
-Developers work in their own trees, then submit pull requests when they think
-their feature or bug fix is ready.
-
-If it is a simple/trivial/non-controversial change, then one of the Bitcoin
-development team members simply pulls it.
-
-If it is a *more complicated or potentially controversial* change, then the patch
-submitter will be asked to start a discussion (if they haven't already) on the
-[mailing list](http://sourceforge.net/mailarchive/forum.php?forum_name=bitcoin-development).
-
-The patch will be accepted if there is broad consensus that it is a good thing.
-Developers should expect to rework and resubmit patches if the code doesn't
-match the project's coding conventions (see [doc/coding.md](doc/coding.md)) or are
-controversial.
-
-The `master` branch is regularly built and tested, but is not guaranteed to be
-completely stable. [Tags](https://github.com/bitcoin/bitcoin/tags) are created
-regularly to indicate new official, stable release versions of Bitcoin.
-
-Testing
--------
-
-Testing and code review is the bottleneck for development; we get more pull
-requests than we can review and test on short notice. Please be patient and help out by testing
-other people's pull requests, and remember this is a security-critical project where any mistake might cost people
-lots of money.
-
-### Automated Testing
-
-Developers are strongly encouraged to write unit tests for new code, and to
-submit new unit tests for old code. Unit tests can be compiled and run (assuming they weren't disabled in configure) with: `make check`
-
-Every pull request is built for both Windows and Linux on a dedicated server,
-and unit and sanity tests are automatically run. The binaries produced may be
-used for manual QA testing — a link to them will appear in a comment on the
-pull request posted by [BitcoinPullTester](https://github.com/BitcoinPullTester). See https://github.com/TheBlueMatt/test-scripts
-for the build/test scripts.
-
-### Manual Quality Assurance (QA) Testing
-
-Large changes should have a test plan, and should be tested by somebody other
-than the developer who wrote the code.
-See https://github.com/bitcoin/QA/ for how to create a test plan.
-
-Translations
-------------
-
-Changes to translations as well as new translations can be submitted to
-[Bitcoin Core's Transifex page](https://www.transifex.com/projects/p/bitcoin/).
-
-Translations are periodically pulled from Transifex and merged into the git repository. See the
-[translation process](doc/translation_process.md) for details on how this works.
-
-**Important**: We do not accept translation changes as GitHub pull requests because the next
-pull from Transifex would automatically overwrite them again.
-
-Translators should also subscribe to the [mailing list](https://groups.google.com/forum/#!forum/bitcoin-translators).
-
-Development tips and tricks
----------------------------
-
-**compiling for debugging**
-
-Run configure with the --enable-debug option, then make. Or run configure with
-CXXFLAGS="-g -ggdb -O0" or whatever debug flags you need.
-
-**debug.log**
-
-If the code is behaving strangely, take a look in the debug.log file in the data directory;
-error and debugging messages are written there.
-
-The -debug=... command-line option controls debugging; running with just -debug will turn
-on all categories (and give you a very large debug.log file).
-
-The Qt code routes qDebug() output to debug.log under category "qt": run with -debug=qt
-to see it.
-
-**testnet and regtest modes**
-
-Run with the -testnet option to run with "play bitcoins" on the test network, if you
-are testing multi-machine code that needs to operate across the internet.
-
-If you are testing something that can run on one machine, run with the -regtest option.
-In regression test mode, blocks can be created on-demand; see qa/rpc-tests/ for tests
-that run in -regtest mode.
-
-**DEBUG_LOCKORDER**
-
-Bitcoin Core is a multithreaded application, and deadlocks or other multithreading bugs
-can be very difficult to track down. Compiling with -DDEBUG_LOCKORDER (configure
-CXXFLAGS="-DDEBUG_LOCKORDER -g") inserts run-time checks to keep track of which locks
-are held, and adds warnings to the debug.log file if inconsistencies are detected.

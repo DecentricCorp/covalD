@@ -1,4 +1,7 @@
-<TS language="eu_ES" version="2.0">
+<TS language="eu_ES" version="2.1">
+<context>
+    <name>AboutDialog</name>
+    </context>
 <context>
     <name>AddressBookPage</name>
     <message>
@@ -50,6 +53,10 @@
     <message>
         <source>Repeat new passphrase</source>
         <translation>Errepikatu pasahitz berria</translation>
+    </message>
+    <message>
+        <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;10 or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
+        <translation>Sartu zorrorako pasahitz berria.&lt;br/&gt; Mesedez erabili &lt;b&gt;gutxienez ausazko 10 karaktere&lt;/b&gt;, edo &lt;b&gt;gutxienez zortzi hitz&lt;/b&gt; pasahitza osatzeko.</translation>
     </message>
     <message>
         <source>Encrypt wallet</source>
@@ -143,6 +150,10 @@
         <translation>Irten aplikaziotik</translation>
     </message>
     <message>
+        <source>Show information about Bitcoin</source>
+        <translation>Erakutsi Bitcoin-i buruzko informazioa</translation>
+    </message>
+    <message>
         <source>About &amp;Qt</source>
         <translation>&amp;Qt-ari buruz</translation>
     </message>
@@ -175,6 +186,14 @@
         <translation>Fitxen tresna-barra</translation>
     </message>
     <message>
+        <source>[testnet]</source>
+        <translation>[testnet]</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n active connection(s) to Bitcoin network</source>
+        <translation><numerusform>Konexio aktibo %n Bitcoin-en sarera</numerusform><numerusform>%n konexio aktibo Bitcoin-en sarera</numerusform></translation>
+    </message>
+    <message>
         <source>Up to date</source>
         <translation>Egunean</translation>
     </message>
@@ -198,7 +217,7 @@
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
         <translation>Zorroa &lt;b&gt;enkriptatuta&lt;/b&gt; eta &lt;b&gt;blokeatuta&lt;/b&gt; dago une honetan</translation>
     </message>
-</context>
+    </context>
 <context>
     <name>ClientModel</name>
     </context>
@@ -211,6 +230,10 @@
     <message>
         <source>Amount</source>
         <translation>Kopurua</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>Helbidea</translation>
     </message>
     <message>
         <source>Date</source>
@@ -297,20 +320,21 @@
         <source>Form</source>
         <translation>Inprimakia</translation>
     </message>
+    <message>
+        <source>&lt;b&gt;Recent transactions&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Azken transakzioak&lt;/b&gt;</translation>
+    </message>
     </context>
 <context>
     <name>PaymentServer</name>
     </context>
 <context>
-    <name>PeerTableModel</name>
-    </context>
-<context>
     <name>QObject</name>
     <message>
-        <source>Amount</source>
-        <translation>Kopurua</translation>
+        <source>Enter a Bitcoin address (e.g. 1NS17iag9jJgTHD1VXjvLCEnZuQ3rJDE9L)</source>
+        <translation>Sartu Bitocin helbide bat (adb.: 1NS17iag9jJgTHD1VXjvLCEnZuQ3rJDE9L) </translation>
     </message>
-    </context>
+</context>
 <context>
     <name>QRImageWidget</name>
     </context>
@@ -449,6 +473,10 @@
         <source>Alt+P</source>
         <translation>Alt+P</translation>
     </message>
+    <message>
+        <source>Enter a Bitcoin address (e.g. 1NS17iag9jJgTHD1VXjvLCEnZuQ3rJDE9L)</source>
+        <translation>Sartu Bitocin helbide bat (adb.: 1NS17iag9jJgTHD1VXjvLCEnZuQ3rJDE9L) </translation>
+    </message>
     </context>
 <context>
     <name>SplashScreen</name>
@@ -517,6 +545,10 @@
         <translation>Helbidea</translation>
     </message>
     <message>
+        <source>Amount</source>
+        <translation>Kopurua</translation>
+    </message>
+    <message>
         <source>Open until %1</source>
         <translation>Zabalik %1 arte</translation>
     </message>
@@ -534,11 +566,11 @@
     </message>
     <message>
         <source>Received with</source>
-        <translation>Jasota honekin: </translation>
+        <translation>Jasoa honekin: </translation>
     </message>
     <message>
         <source>Sent to</source>
-        <translation>Hona bidalia: </translation>
+        <translation>Honi bidalia: </translation>
     </message>
     <message>
         <source>Payment to yourself</source>
@@ -659,9 +691,10 @@
         <source>Address</source>
         <translation>Helbidea</translation>
     </message>
-    </context>
-<context>
-    <name>UnitDisplayStatusBarControl</name>
+    <message>
+        <source>Amount</source>
+        <translation>Kopurua</translation>
+    </message>
     </context>
 <context>
     <name>WalletFrame</name>
@@ -679,8 +712,24 @@
 <context>
     <name>bitcoin-core</name>
     <message>
+        <source>List commands</source>
+        <translation>Komandoen lista</translation>
+    </message>
+    <message>
+        <source>Get help for a command</source>
+        <translation>Laguntza komando batean</translation>
+    </message>
+    <message>
         <source>Options:</source>
         <translation>Aukerak</translation>
+    </message>
+    <message>
+        <source>Specify configuration file (default: bitcoin.conf)</source>
+        <translation>Ezarpen fitxategia aukeratu (berezkoa: bitcoin.conf)</translation>
+    </message>
+    <message>
+        <source>Specify pid file (default: bitcoind.pid)</source>
+        <translation>pid fitxategia aukeratu (berezkoa: bitcoind.pid)</translation>
     </message>
     <message>
         <source>This help message</source>

@@ -28,25 +28,23 @@ BOOST_AUTO_TEST_SUITE(wallet_tests)
 static CWallet wallet;
 static vector<COutput> vCoins;
 
-static void add_coin(const CAmount& nValue, int nAge = 6*24, bool fIsFromMe = false, int nInput=0)
+static void add_coin(int64_t nValue, int nAge = 6*24, bool fIsFromMe = false, int nInput=0)
 {
     static int nextLockTime = 0;
-    CMutableTransaction tx;
+    CTransaction tx;
     tx.nLockTime = nextLockTime++;        // so all transactions get different hashes
     tx.vout.resize(nInput+1);
     tx.vout[nInput].nValue = nValue;
-    if (fIsFromMe) {
-        // IsFromMe() returns (GetDebit() > 0), and GetDebit() is 0 if vin.empty(),
-        // so stop vin being empty, and cache a non-zero Debit to fake out IsFromMe()
-        tx.vin.resize(1);
-    }
     CWalletTx* wtx = new CWalletTx(&wallet, tx);
     if (fIsFromMe)
     {
+        // IsFromMe() returns (GetDebit() > 0), and GetDebit() is 0 if vin.empty(),
+        // so stop vin being empty, and cache a non-zero Debit to fake out IsFromMe()
+        wtx->vin.resize(1);
         wtx->fDebitCached = true;
         wtx->nDebitCached = 1;
     }
-    COutput output(wtx, nInput, nAge, true);
+    COutput output(wtx, nInput, nAge);
     vCoins.push_back(output);
 }
 
@@ -66,7 +64,7 @@ static bool equal_sets(CoinSet a, CoinSet b)
 BOOST_AUTO_TEST_CASE(coin_selection_tests)
 {
     CoinSet setCoinsRet, setCoinsRet2;
-    CAmount nValueRet;
+    int64_t nValueRet;
 
     LOCK(wallet.cs_wallet);
 

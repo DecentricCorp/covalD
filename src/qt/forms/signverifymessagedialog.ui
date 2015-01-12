@@ -19,9 +19,6 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
      <widget class="QWidget" name="tabSignMessage">
       <attribute name="title">
        <string>&amp;Sign Message</string>
@@ -48,7 +45,7 @@
          <item>
           <widget class="QValidatedLineEdit" name="addressIn_SM">
            <property name="toolTip">
-            <string>The Bitcoin address to sign the message with</string>
+            <string>The address to sign the message with (e.g. UeMjHZkbFSkJL9PmapMn1HrhmkNvXu2gP7)</string>
            </property>
           </widget>
          </item>
@@ -152,7 +149,7 @@
          <item>
           <widget class="QPushButton" name="signMessageButton_SM">
            <property name="toolTip">
-            <string>Sign the message to prove you own this Bitcoin address</string>
+            <string>Sign the message to prove you own this Unitus address</string>
            </property>
            <property name="text">
             <string>Sign &amp;Message</string>
@@ -258,7 +255,7 @@
          <item>
           <widget class="QValidatedLineEdit" name="addressIn_VM">
            <property name="toolTip">
-            <string>The Bitcoin address the message was signed with</string>
+            <string>The address the message was signed with (e.g. UeMjHZkbFSkJL9PmapMn1HrhmkNvXu2gP7)</string>
            </property>
           </widget>
          </item>
@@ -295,7 +292,7 @@
          <item>
           <widget class="QPushButton" name="verifyMessageButton_VM">
            <property name="toolTip">
-            <string>Verify the message to ensure it was signed with the specified Bitcoin address</string>
+            <string>Verify the message to ensure it was signed with the specified Unitus address</string>
            </property>
            <property name="text">
             <string>Verify &amp;Message</string>

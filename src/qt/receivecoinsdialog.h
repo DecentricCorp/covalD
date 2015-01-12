@@ -2,10 +2,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_RECEIVECOINSDIALOG_H
-#define BITCOIN_QT_RECEIVECOINSDIALOG_H
-
-#include "guiutil.h"
+#ifndef RECEIVECOINSDIALOG_H
+#define RECEIVECOINSDIALOG_H
 
 #include <QDialog>
 #include <QHeaderView>
@@ -15,12 +13,13 @@
 #include <QPoint>
 #include <QVariant>
 
-class OptionsModel;
-class WalletModel;
+#include "guiutil.h"
 
 namespace Ui {
     class ReceiveCoinsDialog;
 }
+class OptionsModel;
+class WalletModel;
 
 QT_BEGIN_NAMESPACE
 class QModelIndex;
@@ -73,4 +72,4 @@ private slots:
     void copyAmount();
 };
 
-#endif // BITCOIN_QT_RECEIVECOINSDIALOG_H
+#endif // RECEIVECOINSDIALOG_H

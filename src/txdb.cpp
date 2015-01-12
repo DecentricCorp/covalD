@@ -5,12 +5,11 @@
 
 #include "txdb.h"
 
-#include "pow.h"
+#include "core.h"
 #include "uint256.h"
+#include "auxpow.h"
 
 #include <stdint.h>
-
-#include <boost/thread.hpp>
 
 using namespace std;
 
@@ -28,47 +27,71 @@ void static BatchWriteHashBestChain(CLevelDBBatch &batch, const uint256 &hash) {
 CCoinsViewDB::CCoinsViewDB(size_t nCacheSize, bool fMemory, bool fWipe) : db(GetDataDir() / "chainstate", nCacheSize, fMemory, fWipe) {
 }
 
-bool CCoinsViewDB::GetCoins(const uint256 &txid, CCoins &coins) const {
+bool CCoinsViewDB::GetCoins(const uint256 &txid, CCoins &coins) {
     return db.Read(make_pair('c', txid), coins);
 }
 
-bool CCoinsViewDB::HaveCoins(const uint256 &txid) const {
+bool CCoinsViewDB::SetCoins(const uint256 &txid, const CCoins &coins) {
+    CLevelDBBatch batch;
+    BatchWriteCoins(batch, txid, coins);
+    return db.WriteBatch(batch);
+}
+
+bool CCoinsViewDB::HaveCoins(const uint256 &txid) {
     return db.Exists(make_pair('c', txid));
 }
 
-uint256 CCoinsViewDB::GetBestBlock() const {
+uint256 CCoinsViewDB::GetBestBlock() {
     uint256 hashBestChain;
     if (!db.Read('B', hashBestChain))
         return uint256(0);
     return hashBestChain;
 }
 
-bool CCoinsViewDB::BatchWrite(CCoinsMap &mapCoins, const uint256 &hashBlock) {
+bool CCoinsViewDB::SetBestBlock(const uint256 &hashBlock) {
     CLevelDBBatch batch;
-    size_t count = 0;
-    size_t changed = 0;
-    for (CCoinsMap::iterator it = mapCoins.begin(); it != mapCoins.end();) {
-        if (it->second.flags & CCoinsCacheEntry::DIRTY) {
-            BatchWriteCoins(batch, it->first, it->second.coins);
-            changed++;
-        }
-        count++;
-        CCoinsMap::iterator itOld = it++;
-        mapCoins.erase(itOld);
-    }
+    BatchWriteHashBestChain(batch, hashBlock);
+    return db.WriteBatch(batch);
+}
+
+bool CCoinsViewDB::BatchWrite(const std::map<uint256, CCoins> &mapCoins, const uint256 &hashBlock) {
+    LogPrint("coindb", "Committing %u changed transactions to coin database...\n", (unsigned int)mapCoins.size());
+
+    CLevelDBBatch batch;
+    for (std::map<uint256, CCoins>::const_iterator it = mapCoins.begin(); it != mapCoins.end(); it++)
+        BatchWriteCoins(batch, it->first, it->second);
     if (hashBlock != uint256(0))
         BatchWriteHashBestChain(batch, hashBlock);
 
-    LogPrint("coindb", "Committing %u changed transactions (out of %u) to coin database...\n", (unsigned int)changed, (unsigned int)count);
     return db.WriteBatch(batch);
 }
 
 CBlockTreeDB::CBlockTreeDB(size_t nCacheSize, bool fMemory, bool fWipe) : CLevelDBWrapper(GetDataDir() / "blocks" / "index", nCacheSize, fMemory, fWipe) {
 }
 
-bool CBlockTreeDB::WriteBlockIndex(const CDiskBlockIndex& blockindex)
+// bool CBlockTreeDB::WriteBlockIndex(const CDiskBlockIndex& blockindex)
+// {
+    // return Write(make_pair('b', blockindex.GetBlockHash()), blockindex);
+// }
+bool CBlockTreeDB::WriteDiskBlockIndex(const CDiskBlockIndex& diskblockindex)
 {
-    return Write(make_pair('b', blockindex.GetBlockHash()), blockindex);
+	return Write(boost::tuples::make_tuple('b', *diskblockindex.phashBlock, 'a'), diskblockindex);
+}
+
+bool CBlockTreeDB::WriteBlockIndex(const CBlockIndex& blockindex)
+{
+    return Write(boost::tuples::make_tuple('b', blockindex.GetBlockHash(), 'b'), blockindex);
+}
+
+bool CBlockTreeDB::ReadDiskBlockIndex(const uint256 &blkid, CDiskBlockIndex &diskblockindex)
+{
+    return Read(boost::tuples::make_tuple('b', blkid, 'a'), diskblockindex);
+}
+
+bool CBlockTreeDB::WriteBestInvalidWork(const CBigNum& bnBestInvalidWork)
+{
+    // Obsolete; only written for backward compatibility.
+    return Write('I', bnBestInvalidWork);
 }
 
 bool CBlockTreeDB::WriteBlockFileInfo(int nFile, const CBlockFileInfo &info) {
@@ -99,17 +122,14 @@ bool CBlockTreeDB::ReadLastBlockFile(int &nFile) {
     return Read('l', nFile);
 }
 
-bool CCoinsViewDB::GetStats(CCoinsStats &stats) const {
-    /* It seems that there are no "const iterators" for LevelDB.  Since we
-       only need read operations on it, use a const-cast to get around
-       that restriction.  */
-    boost::scoped_ptr<leveldb::Iterator> pcursor(const_cast<CLevelDBWrapper*>(&db)->NewIterator());
+bool CCoinsViewDB::GetStats(CCoinsStats &stats) {
+    leveldb::Iterator *pcursor = db.NewIterator();
     pcursor->SeekToFirst();
 
     CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
     stats.hashBlock = GetBestBlock();
     ss << stats.hashBlock;
-    CAmount nTotalAmount = 0;
+    int64_t nTotalAmount = 0;
     while (pcursor->Valid()) {
         boost::this_thread::interruption_point();
         try {
@@ -146,6 +166,7 @@ bool CCoinsViewDB::GetStats(CCoinsStats &stats) const {
             return error("%s : Deserialize or I/O error - %s", __func__, e.what());
         }
     }
+    delete pcursor;
     stats.nHeight = mapBlockIndex.find(GetBestBlock())->second->nHeight;
     stats.hashSerialized = ss.GetHash();
     stats.nTotalAmount = nTotalAmount;
@@ -177,10 +198,12 @@ bool CBlockTreeDB::ReadFlag(const std::string &name, bool &fValue) {
 
 bool CBlockTreeDB::LoadBlockIndexGuts()
 {
-    boost::scoped_ptr<leveldb::Iterator> pcursor(NewIterator());
+    leveldb::Iterator *pcursor = NewIterator();
 
     CDataStream ssKeySet(SER_DISK, CLIENT_VERSION);
-    ssKeySet << make_pair('b', uint256(0));
+    // ssKeySet << make_pair('b', uint256(0));
+	uint256 hash;
+	ssKeySet << boost::tuples::make_tuple('b', uint256(0), 'a'); // 'b' is the prefix for BlockIndex, 'a' sigifies the first part
     pcursor->Seek(ssKeySet.str());
 
     // Load mapBlockIndex
@@ -192,29 +215,48 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
             char chType;
             ssKey >> chType;
             if (chType == 'b') {
+				ssKey >> hash;
+				
                 leveldb::Slice slValue = pcursor->value();
-                CDataStream ssValue(slValue.data(), slValue.data()+slValue.size(), SER_DISK, CLIENT_VERSION);
+                // CDataStream ssValue(slValue.data(), slValue.data()+slValue.size(), SER_DISK, CLIENT_VERSION);
+				CDataStream ssValue_immutable(slValue.data(), slValue.data()+slValue.size(), SER_DISK, CLIENT_VERSION);
                 CDiskBlockIndex diskindex;
-                ssValue >> diskindex;
+                // ssValue >> diskindex;
+				ssValue_immutable >> diskindex; // read all immutable data
+				
+				// Construct immutable parts of block index objecty
+				CBlockIndex* pindexNew = InsertBlockIndex(hash);
+				assert(diskindex.GetBlockHash() == *pindexNew->phashBlock); // paranoia check
 
-                // Construct block index object
-                CBlockIndex* pindexNew = InsertBlockIndex(diskindex.GetBlockHash());
+                // // Construct block index object
+                // CBlockIndex* pindexNew = InsertBlockIndex(diskindex.GetBlockHash());
                 pindexNew->pprev          = InsertBlockIndex(diskindex.hashPrev);
                 pindexNew->nHeight        = diskindex.nHeight;
-                pindexNew->nFile          = diskindex.nFile;
-                pindexNew->nDataPos       = diskindex.nDataPos;
-                pindexNew->nUndoPos       = diskindex.nUndoPos;
+                // pindexNew->nFile          = diskindex.nFile;
+                // pindexNew->nDataPos       = diskindex.nDataPos;
+                // pindexNew->nUndoPos       = diskindex.nUndoPos;
                 pindexNew->nVersion       = diskindex.nVersion;
                 pindexNew->hashMerkleRoot = diskindex.hashMerkleRoot;
                 pindexNew->nTime          = diskindex.nTime;
                 pindexNew->nBits          = diskindex.nBits;
                 pindexNew->nNonce         = diskindex.nNonce;
-                pindexNew->nStatus        = diskindex.nStatus;
+                // pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
 
-                if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, pindexNew->GetAlgo()))
-                    return error("LoadBlockIndex() : CheckProofOfWork failed: %s", pindexNew->ToString());
+                // if (!pindexNew->CheckIndex())
+				// CheckIndex need phashBlock to be set
+				diskindex.phashBlock = pindexNew->phashBlock;
+				if (!diskindex.CheckIndex())
+                    return error("LoadBlockIndex() : CheckIndex failed: %s", pindexNew->ToString());
 
+				pcursor->Next(); // now we should be on the 'b' subkey
+				
+				assert(pcursor->Valid());
+				
+				slValue = pcursor->value();
+				CDataStream ssValue_mutable(slValue.data(), slValue.data()+slValue.size(), SER_DISK, CLIENT_VERSION);
+				ssValue_mutable >> *pindexNew;      // read all mutable data
+				
                 pcursor->Next();
             } else {
                 break; // if shutdown requested or finished loading block index
@@ -223,6 +265,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
             return error("%s : Deserialize or I/O error - %s", __func__, e.what());
         }
     }
+    delete pcursor;
 
     return true;
 }

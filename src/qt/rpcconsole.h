@@ -2,13 +2,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_RPCCONSOLE_H
-#define BITCOIN_QT_RPCCONSOLE_H
-
-#include "guiutil.h"
-#include "peertablemodel.h"
-
-#include "net.h"
+#ifndef RPCCONSOLE_H
+#define RPCCONSOLE_H
 
 #include <QDialog>
 
@@ -17,10 +12,6 @@ class ClientModel;
 namespace Ui {
     class RPCConsole;
 }
-
-QT_BEGIN_NAMESPACE
-class QItemSelection;
-QT_END_NAMESPACE
 
 /** Local Bitcoin RPC console. */
 class RPCConsole: public QDialog
@@ -53,9 +44,6 @@ private slots:
     void on_sldGraphRange_valueChanged(int value);
     /** update traffic statistics */
     void updateTrafficStats(quint64 totalBytesIn, quint64 totalBytesOut);
-    void resizeEvent(QResizeEvent *event);
-    void showEvent(QShowEvent *event);
-    void hideEvent(QHideEvent *event);
 
 public slots:
     void clear();
@@ -69,10 +57,6 @@ public slots:
     void browseHistory(int offset);
     /** Scroll console view to end */
     void scrollToEnd();
-    /** Handle selection of peer in peers list */
-    void peerSelected(const QItemSelection &selected, const QItemSelection &deselected);
-    /** Handle updated peer information */
-    void peerLayoutChanged();
 
 signals:
     // For RPC command executor
@@ -81,23 +65,14 @@ signals:
 
 private:
     static QString FormatBytes(quint64 bytes);
-    void startExecutor();
     void setTrafficGraphRange(int mins);
-    /** show detailed information on ui about selected node */
-    void updateNodeDetail(const CNodeCombinedStats *stats);
-
-    enum ColumnWidths
-    {
-        ADDRESS_COLUMN_WIDTH = 200,
-        SUBVERSION_COLUMN_WIDTH = 100,
-        PING_COLUMN_WIDTH = 80
-    };
 
     Ui::RPCConsole *ui;
     ClientModel *clientModel;
     QStringList history;
     int historyPtr;
-    NodeId cachedNodeid;
+
+    void startExecutor();
 };
 
-#endif // BITCOIN_QT_RPCCONSOLE_H
+#endif // RPCCONSOLE_H

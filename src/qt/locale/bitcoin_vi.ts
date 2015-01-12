@@ -1,4 +1,7 @@
-<TS language="vi" version="2.0">
+<TS language="vi" version="2.1">
+<context>
+    <name>AboutDialog</name>
+    </context>
 <context>
     <name>AddressBookPage</name>
     <message>
@@ -53,6 +56,10 @@
         <translation>Số lượng</translation>
     </message>
     <message>
+        <source>Address</source>
+        <translation>Địa chỉ</translation>
+    </message>
+    <message>
         <source>(no label)</source>
         <translation>(chưa có nhãn)</translation>
     </message>
@@ -82,14 +89,7 @@
     <name>PaymentServer</name>
     </context>
 <context>
-    <name>PeerTableModel</name>
-    </context>
-<context>
     <name>QObject</name>
-    <message>
-        <source>Amount</source>
-        <translation>Số lượng</translation>
-    </message>
     </context>
 <context>
     <name>QRImageWidget</name>
@@ -168,6 +168,10 @@
         <source>Address</source>
         <translation>Địa chỉ</translation>
     </message>
+    <message>
+        <source>Amount</source>
+        <translation>Số lượng</translation>
+    </message>
     </context>
 <context>
     <name>TransactionView</name>
@@ -183,9 +187,10 @@
         <source>Address</source>
         <translation>Địa chỉ</translation>
     </message>
-    </context>
-<context>
-    <name>UnitDisplayStatusBarControl</name>
+    <message>
+        <source>Amount</source>
+        <translation>Số lượng</translation>
+    </message>
     </context>
 <context>
     <name>WalletFrame</name>
