@@ -86,9 +86,9 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
         return bnNew.GetCompact();
 }
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
 {
-		int algo = pblock->GetAlgo();
+		//int algo = pblock->GetAlgo();
 
         static const int64_t        BlocksTargetSpacing                        = 60; // 60 seconds
         unsigned int                TimeDaySeconds                                = 60 * 60 * 24;
