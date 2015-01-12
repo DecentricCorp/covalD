@@ -60,7 +60,7 @@ const CBlockIndex *CChain::FindFork(const CBlockIndex *pindex) const {
 
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, int algo)
 {
-    while (pindex && (pindex->GetAlgo() != algo))
+    while (pindex && (pindex->GetAlgo() != algo) && (pindex->pprev >= 2)) //i chose 2 because block 0, 1 arnt checked
         pindex = pindex->pprev;
     return pindex;
 }

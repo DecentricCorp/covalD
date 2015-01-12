@@ -59,7 +59,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
                 if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
                 PastRateAdjustmentRatio                        = double(PastRateTargetSeconds) / double(PastRateActualSeconds);
                 }
-                EventHorizonDeviation                        = 1 + (0.7084 * std::pow((double(PastBlocksMass)/double(144)), -1.228));
+                EventHorizonDeviation                        = 1 + (0.7084 * std::pow((double(PastBlocksMass)/double(28.2)), -1.228));
                 EventHorizonDeviationFast                = EventHorizonDeviation;
                 EventHorizonDeviationSlow                = 1 / EventHorizonDeviation;
                 
@@ -92,8 +92,8 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
         static const int64_t        BlocksTargetSpacing                        = 60; // 60 seconds
         unsigned int                TimeDaySeconds                                = 60 * 60 * 24;
-        int64_t                       PastSecondsMin                                = TimeDaySeconds * 0.25;
-        int64_t                       PastSecondsMax                                = TimeDaySeconds * 1;
+        int64_t                       PastSecondsMin                                = TimeDaySeconds * 0.01;
+        int64_t                       PastSecondsMax                                = TimeDaySeconds * 0.14;
         uint64_t                      PastBlocksMin                                = PastSecondsMin / BlocksTargetSpacing;
         uint64_t                      PastBlocksMax                                = PastSecondsMax / BlocksTargetSpacing;        
         
