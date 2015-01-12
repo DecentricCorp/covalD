@@ -86,7 +86,7 @@ void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
 
     // Updating time can change work required on testnet:
     if (Params().AllowMinDifficultyBlocks())
-        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, pblock->GetAlgo());
+        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, pblock->GetAlgo() );
 }
 
 CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo)
