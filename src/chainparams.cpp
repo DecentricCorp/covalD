@@ -55,7 +55,7 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
  */
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
-        (     0, uint256("0x2793f4c067b418f9bca11549a456bb66a3d0846653a0c2a19104984f7da3274a")) // Genesis
+        (     0, uint256("0x38f85f01781e2f4b7d937f4994fcfdb42d4871928bd2d9d32844827e1b316fcd")) // Genesis
         (     1, uint256("0x00000077c4ac0a51470fec8424f08b2e698a2058726fcda2d3107c02656e5173")) // Airdrop
         ;
 static const Checkpoints::CCheckpointData data = {
@@ -135,9 +135,9 @@ public:
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         genesis.nVersion = 514;
-        genesis.nTime    = 1421122022;
+        genesis.nTime    = 1421120304;
         genesis.nBits    = 0x1e0ffff0; // 32 bits of leading zeros in PoW
-        genesis.nNonce   = 88618;
+        genesis.nNonce   = 347005;
         txNew.vin[0].scriptSig = CScript() << genesis.nBits << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 50 * COIN;
         txNew.vout[0].scriptPubKey = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
@@ -146,7 +146,7 @@ public:
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x2793f4c067b418f9bca11549a456bb66a3d0846653a0c2a19104984f7da3274a"));
+        assert(hashGenesisBlock == uint256("0x38f85f01781e2f4b7d937f4994fcfdb42d4871928bd2d9d32844827e1b316fcd"));
         assert(genesis.hashMerkleRoot == uint256("0xc9d7a023e2f284176ec5d140293d2307e32575d9e3f062d2f1e7e093699807a0"));
 
         vSeeds.push_back(CDNSSeedData("ribbitchain.info", "ribbitchain.info"));
