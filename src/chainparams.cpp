@@ -147,7 +147,7 @@ public:
 
         hashGenesisBlock = genesis.GetHash();
         assert(hashGenesisBlock == uint256("0x000008a9b3a16aa5105611a81492b245f979c930a4d185bd6ad6f43acc1b454c"));
-        assert(genesis.hashMerkleRoot == uint256("0x8ccdb8815b08653bef4677df85a2ac2280a45efb804b9c74c077ed0417f8e8f1"));
+        assert(genesis.hashMerkleRoot == uint256("0xc9d7a023e2f284176ec5d140293d2307e32575d9e3f062d2f1e7e093699807a0"));
 
         vSeeds.push_back(CDNSSeedData("ribbitchain.info", "ribbitchain.info"));
 		vSeeds.push_back(CDNSSeedData("dirtydiggers.org", "mm.dirtydiggers.org"));
