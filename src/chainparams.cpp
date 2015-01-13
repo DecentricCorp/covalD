@@ -134,7 +134,7 @@ public:
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
-        genesis.nVersion = 1;
+        genesis.nVersion = 514;
         genesis.nTime    = 1421120304;
         genesis.nBits    = 0x1e0ffff0; // 32 bits of leading zeros in PoW
         genesis.nNonce   = 347005;
