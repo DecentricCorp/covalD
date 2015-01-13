@@ -56,7 +56,7 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
         (     0, uint256("0x000008a9b3a16aa5105611a81492b245f979c930a4d185bd6ad6f43acc1b454c")) // Genesis
-        (     1, uint256("000072c9cba99b94b56dae9b3a06f19b1f984b84a91e184ab7ee0b3208f14745")) // Airdrop
+        (     1, uint256("0x00000077c4ac0a51470fec8424f08b2e698a2058726fcda2d3107c02656e5173")) // Airdrop
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
@@ -69,7 +69,7 @@ static const Checkpoints::CCheckpointData data = {
 static Checkpoints::MapCheckpoints mapCheckpointsTestnet =
         boost::assign::map_list_of
         (   0, uint256("0x0000e80f6ba2da2d801a3ce187388d2200c86f85e07178dcea25772f872576f1"))
-        (   1, uint256("000072c9cba99b94b56dae9b3a06f19b1f984b84a91e184ab7ee0b3208f14745")) // Airdrop
+        (   1, uint256("0x00000077c4ac0a51470fec8424f08b2e698a2058726fcda2d3107c02656e5173")) // Airdrop
         ;
 static const Checkpoints::CCheckpointData dataTestnet = {
         &mapCheckpointsTestnet,
@@ -118,7 +118,7 @@ public:
         nAirdrop = 1000000000;
         dInterestAPY = 5;
         // Airdrop coins are not checked for proof of work 
-        hashAirdropBlock.SetHex("000072c9cba99b94b56dae9b3a06f19b1f984b84a91e184ab7ee0b3208f14745"); 
+        hashAirdropBlock.SetHex("0x00000077c4ac0a51470fec8424f08b2e698a2058726fcda2d3107c02656e5173"); 
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
