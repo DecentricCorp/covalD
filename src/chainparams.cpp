@@ -55,7 +55,7 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
  */
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
-        (     0, uint256("0x00000000b2c8fc5991e8c92c73ff66825827c6dd740217234541699ec5dc3677")) // Genesis
+        (     0, uint256("0x38f85f01781e2f4b7d937f4994fcfdb42d4871928bd2d9d32844827e1b316fcd")) // Genesis
         (     1, uint256("0x00000077c4ac0a51470fec8424f08b2e698a2058726fcda2d3107c02656e5173")) // Airdrop
         ;
 static const Checkpoints::CCheckpointData data = {
@@ -130,14 +130,14 @@ public:
          *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
          *   vMerkleTree: 4a5e1e
          */
-        const char* pszTimestamp = "Frawg";
+        const char* pszTimestamp = "12/Jan/2015 Frogs Rejoice As New Kings Ohyea!";
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         genesis.nVersion = 1;
-        genesis.nTime    = 1415208967;
-        genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
-        genesis.nNonce   = 1524017540;
+        genesis.nTime    = 1421120304;
+        genesis.nBits    = 0x1e0ffff0; // 32 bits of leading zeros in PoW
+        genesis.nNonce   = 347005;
         txNew.vin[0].scriptSig = CScript() << genesis.nBits << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 50 * COIN;
         txNew.vout[0].scriptPubKey = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
@@ -146,10 +146,11 @@ public:
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x00000000b2c8fc5991e8c92c73ff66825827c6dd740217234541699ec5dc3677"));
-        assert(genesis.hashMerkleRoot == uint256("0x8ccdb8815b08653bef4677df85a2ac2280a45efb804b9c74c077ed0417f8e8f1"));
+        assert(hashGenesisBlock == uint256("0x38f85f01781e2f4b7d937f4994fcfdb42d4871928bd2d9d32844827e1b316fcd"));
+        assert(genesis.hashMerkleRoot == uint256("0xc9d7a023e2f284176ec5d140293d2307e32575d9e3f062d2f1e7e093699807a0"));
 
         vSeeds.push_back(CDNSSeedData("ribbitchain.info", "ribbitchain.info"));
+		vSeeds.push_back(CDNSSeedData("dirtydiggers.org", "mm.dirtydiggers.org"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
