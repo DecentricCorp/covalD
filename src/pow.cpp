@@ -29,7 +29,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
     if (pindexPrevAlgo == NULL)
         return nProofOfWorkLimit; // not enough blocks available
 	
-        const CBlockIndex  *BlockLastSolved = pindexLast;
+        const CBlockIndex  *BlockLastSolved = pindexPrevAlgo;
         const CBlockIndex  *BlockReading    = pindexPrevAlgo;
         const CBlockHeader *BlockCreating   = pblock;
         BlockCreating = BlockCreating;
