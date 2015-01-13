@@ -104,7 +104,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         static const int64_t        BlocksTargetSpacing                        = 60; // 60 seconds
         unsigned int                TimeDaySeconds                                = 60 * 60 * 24;
         int64_t                       PastSecondsMin                                = TimeDaySeconds * 0.04;
-        int64_t                       PastSecondsMax                                = TimeDaySeconds * 1;
+        int64_t                       PastSecondsMax                                = TimeDaySeconds * 0.40;
         uint64_t                      PastBlocksMin                                = PastSecondsMin / BlocksTargetSpacing;
         uint64_t                      PastBlocksMax                                = PastSecondsMax / BlocksTargetSpacing;        
         
