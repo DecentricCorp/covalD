@@ -52,7 +52,7 @@ bool fReindex = false;
 bool fTxIndex = false;
 bool fIsBareMultisigStd = true;
 unsigned int nCoinCacheSize = 5000;
-//int miningAlgo = ALGO_SHA256D;
+int miningAlgo = ALGO_SHA256D;
 
 /** Fees smaller than this (in satoshi) are considered zero fee (for relaying and mining) */
 CFeeRate minRelayTxFee = CFeeRate(1000);
