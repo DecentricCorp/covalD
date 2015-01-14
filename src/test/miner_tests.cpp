@@ -59,8 +59,12 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     LOCK(cs_main);
     Checkpoints::fEnabled = false;
 
+  // Josh: Repeat the tests for each algorithm
+  for (int nAlgo = 0; nAlgo < NUM_ALGOS; ++nAlgo)
+  {
+	    
     // Simple block creation, nothing special yet:
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
 
     // We can't make transactions until we have inputs
     // Therefore, load 100 blocks :)
@@ -68,12 +72,15 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     for (unsigned int i = 0; i < sizeof(blockinfo)/sizeof(*blockinfo); ++i)
     {
         CBlock *pblock = &pblocktemplate->block; // pointer for convenience
-        pblock->nVersion = 1;
+        // Josh: The algo is indicated by setting high bits within the version field
+        pblock->nVersion = 2 + (512 * nAlgo);
         pblock->nTime = chainActive.Tip()->GetMedianTimePast()+1;
         CMutableTransaction txCoinbase(pblock->vtx[0]);
         txCoinbase.vin[0].scriptSig = CScript();
-        txCoinbase.vin[0].scriptSig.push_back(blockinfo[i].extranonce);
+	// Josh: Rearranging these fields to put height first in the coinbase TX
+	// Josh TODO: Even this won't help pass these tests, sigh, probably need to recalculate all the nonces....
         txCoinbase.vin[0].scriptSig.push_back(chainActive.Height());
+        txCoinbase.vin[0].scriptSig.push_back(blockinfo[i].extranonce);
         txCoinbase.vout[0].scriptPubKey = CScript();
         pblock->vtx[0] = CTransaction(txCoinbase);
         if (txFirst.size() < 2)
@@ -81,14 +88,16 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         pblock->hashMerkleRoot = pblock->BuildMerkleTree();
         pblock->nNonce = blockinfo[i].nonce;
         CValidationState state;
-        BOOST_CHECK(ProcessNewBlock(state, NULL, pblock));
+        // Josh TODO: This test fails, why?
+	BOOST_CHECK(ProcessNewBlock(state, NULL, pblock));
+        // Josh TODO: This test fails, why?
         BOOST_CHECK(state.IsValid());
         pblock->hashPrevBlock = pblock->GetHash();
     }
     delete pblocktemplate;
 
     // Just to make sure we can still make simple blocks
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
 
     // block sigops > limit: 1000 CHECKMULTISIG + 1
@@ -106,7 +115,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         mempool.addUnchecked(hash, CTxMemPoolEntry(tx, 11, GetTime(), 111.0, 11));
         tx.vin[0].prevout.hash = hash;
     }
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     mempool.clear();
 
@@ -126,14 +135,14 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         mempool.addUnchecked(hash, CTxMemPoolEntry(tx, 11, GetTime(), 111.0, 11));
         tx.vin[0].prevout.hash = hash;
     }
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     mempool.clear();
 
     // orphan in mempool
     hash = tx.GetHash();
     mempool.addUnchecked(hash, CTxMemPoolEntry(tx, 11, GetTime(), 111.0, 11));
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     mempool.clear();
 
@@ -151,7 +160,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     tx.vout[0].nValue = 5900000000LL;
     hash = tx.GetHash();
     mempool.addUnchecked(hash, CTxMemPoolEntry(tx, 11, GetTime(), 111.0, 11));
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     mempool.clear();
 
@@ -162,7 +171,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     tx.vout[0].nValue = 0;
     hash = tx.GetHash();
     mempool.addUnchecked(hash, CTxMemPoolEntry(tx, 11, GetTime(), 111.0, 11));
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     mempool.clear();
 
@@ -180,7 +189,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     tx.vout[0].nValue -= 1000000;
     hash = tx.GetHash();
     mempool.addUnchecked(hash, CTxMemPoolEntry(tx, 11, GetTime(), 111.0, 11));
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     mempool.clear();
 
@@ -194,17 +203,17 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     tx.vout[0].scriptPubKey = CScript() << OP_2;
     hash = tx.GetHash();
     mempool.addUnchecked(hash, CTxMemPoolEntry(tx, 11, GetTime(), 111.0, 11));
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     mempool.clear();
 
     // subsidy changing
     int nHeight = chainActive.Height();
     chainActive.Tip()->nHeight = 209999;
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     chainActive.Tip()->nHeight = 210000;
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
     delete pblocktemplate;
     chainActive.Tip()->nHeight = nHeight;
 
@@ -236,7 +245,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     mempool.addUnchecked(hash, CTxMemPoolEntry(tx2, 11, GetTime(), 111.0, 11));
     BOOST_CHECK(!IsFinalTx(tx2));
 
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
 
     // Neither tx should have make it into the template.
     BOOST_CHECK_EQUAL(pblocktemplate->block.vtx.size(), 1);
@@ -249,7 +258,8 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     BOOST_CHECK(IsFinalTx(tx, chainActive.Tip()->nHeight + 1));
     BOOST_CHECK(IsFinalTx(tx2));
 
-    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey));
+    BOOST_CHECK(pblocktemplate = CreateNewBlock(scriptPubKey, nAlgo));
+    // Josh TODO: This test fails, why?
     BOOST_CHECK_EQUAL(pblocktemplate->block.vtx.size(), 3);
     delete pblocktemplate;
 
@@ -260,6 +270,9 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     BOOST_FOREACH(CTransaction *tx, txFirst)
         delete tx;
 
+  // Josh: End of nAlgo loop
+  }
+    
     Checkpoints::fEnabled = true;
 }
 
