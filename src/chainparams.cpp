@@ -107,7 +107,7 @@ public:
         nDefaultPort = 3764;
 
 		//ALGO DIFFs
-        bnProofOfWorkLimit[ALGO_SHA256D] = ~uint256(0) >> 32; 
+        bnProofOfWorkLimit[ALGO_SHA256D] = ~uint256(0) >> 20; 
         bnProofOfWorkLimit[ALGO_SCRYPT] = ~uint256(0) >> 20;
         
 		nSubsidyHalvingInterval = 210000;
