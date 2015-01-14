@@ -20,6 +20,7 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
 	//set ProofOfWorkLimit
 	unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
 
+
 	//genesis
 	 if (pindexLast == NULL)
         return nProofOfWorkLimit;
