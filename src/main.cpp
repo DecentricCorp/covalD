@@ -2523,6 +2523,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
 bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& state, CBlockIndex * const pindexPrev)
 {
     uint256 hash = block.GetHash();
+    
     if (hash == Params().HashGenesisBlock() || hash == Params().HashAirdropBlock())
         return true;
 
@@ -2532,7 +2533,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
 
     // Check proof of work
     if ((!Params().SkipProofOfWorkCheck()) && 
-       (block.nBits != GetNextWorkRequired(pindexPrev, &block)))
+       (block.nBits != GetNextWorkRequired(pindexPrev, &block, block.GetAlgo() )))
         return state.DoS(100, error("%s : incorrect proof of work", __func__),
                          REJECT_INVALID, "bad-diffbits");
 
@@ -2627,7 +2628,7 @@ bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, CBloc
 
         // Check proof of work
         if ((!Params().SkipProofOfWorkCheck()) &&
-           (block.nBits != GetNextWorkRequired(pindexPrev, &block)))
+           (block.nBits != GetNextWorkRequired(pindexPrev, &block, block.GetAlgo() )))
             return state.DoS(100, error("%s : incorrect proof of work", __func__),
                              REJECT_INVALID, "bad-diffbits");
 

@@ -10,6 +10,10 @@
 #include <string>
 #include <cmath>
 
+
+#include "utilstrencodings.h"
+#include "bignum.h"
+
 class CBlockHeader;
 class CBlockIndex;
 class uint256;
@@ -72,7 +76,7 @@ inline std::string GetAlgoName(int Algo)
 }
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, 
-        const CBlockHeader *pblock);
+        const CBlockHeader *pblock, int algo);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, int algo);

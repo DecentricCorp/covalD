@@ -86,7 +86,7 @@ void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
 
     // Updating time can change work required on testnet:
     if (Params().AllowMinDifficultyBlocks())
-        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
+        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, pblock->GetAlgo() );
 }
 
 CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo)
@@ -350,7 +350,10 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo)
         // Fill in header
         pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
         UpdateTime(pblock, pindexPrev);
-        pblock->nBits          = GetNextWorkRequired(GetLastBlockIndex(pindexPrev, algo), pblock);
+        // This is ideal to use the last ALGO block BUT if the block is forever alone it creates an infinite loop in getlastblockindex
+		//pblock->nBits          = GetNextWorkRequired(GetLastBlockIndex(pindexPrev, algo), pblock, algo);
+		pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, algo);
+
         pblock->nNonce         = 0;
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
