@@ -15,89 +15,116 @@
 #include "uint256.h"
 #include "util.h"
 
-unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBlockHeader *pblock, uint64_t TargetBlocksSpacingSeconds, uint64_t PastBlocksMin, uint64_t PastBlocksMax, int algo) {
-        /* current difficulty formula, megacoin - kimoto gravity well */
-        const CBlockIndex  *BlockLastSolved = pindexLast;
-        const CBlockIndex  *BlockReading    = pindexLast;
-        const CBlockHeader *BlockCreating   = pblock;
-                                             BlockCreating         = BlockCreating;
-        uint64_t                               PastBlocksMass          = 0;
-        int64_t                                PastRateActualSeconds    = 0;
-        int64_t                                PastRateTargetSeconds    = 0;
-        double                               PastRateAdjustmentRatio = double(1);
-        uint256                              PastDifficultyAverage;
-        uint256                              PastDifficultyAveragePrev;
-        double                               EventHorizonDeviation;
-        double                               EventHorizonDeviationFast;
-        double                               EventHorizonDeviationSlow;
-        
-    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || (uint64_t)BlockLastSolved->nHeight < PastBlocksMin) { return Params().ProofOfWorkLimit(algo).GetCompact(); }
+unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	
-        int64_t LatestBlockTime = BlockLastSolved->GetBlockTime();
-		
-        for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
-                if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
-                PastBlocksMass++;
-                
-                if (i == 1)        { PastDifficultyAverage.SetCompact(BlockReading->nBits); }
-                else                { PastDifficultyAverage = ((uint256().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
-                PastDifficultyAveragePrev = PastDifficultyAverage;
-				
-				if (LatestBlockTime < BlockReading->GetBlockTime()) {
-					//eliminates the ability to go back in time
-					LatestBlockTime = BlockReading->GetBlockTime();
-				}
-                
-                PastRateActualSeconds                        = BlockLastSolved->GetBlockTime() - BlockReading->GetBlockTime();
-                PastRateTargetSeconds                        = TargetBlocksSpacingSeconds * PastBlocksMass;
-                PastRateAdjustmentRatio                        = double(1);
-				
-				if (PastRateActualSeconds < 5) { PastRateActualSeconds = 5; }
+	unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
+    LogPrintf("Proof Of Work Limit For Algo % i, is % i \n", algo, nProofOfWorkLimit);
 
+    // Genesis block
+    if (pindexLast == NULL){
+		LogPrintf("Genesis Block Difficulty\n");
+        return nProofOfWorkLimit;
+	}
+	const CBlockIndex* pindexPrevAlgo = GetLastBlockIndexForAlgo(pindexLast, algo);
+    if (pindexPrevAlgo == NULL){
+		LogPrintf("pindexPrevAlgo == NULL for Algo % i, is % i \n", algo, nProofOfWorkLimit);
+        return nProofOfWorkLimit;
+	}
+    /* Franko Multi Algo Gravity Well */
+    const CBlockIndex   *BlockLastSolved                 = pindexPrevAlgo;
+    const CBlockIndex   *BlockReading                    = pindexLast;
 
-				
-                if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
-                PastRateAdjustmentRatio                        = double(PastRateTargetSeconds) / double(PastRateActualSeconds);
-                }
-                EventHorizonDeviation                        = 1 + (0.7084 * std::pow((double(PastBlocksMass)/double(144)), -1.228));
-                EventHorizonDeviationFast                = EventHorizonDeviation;
-                EventHorizonDeviationSlow                = 1 / EventHorizonDeviation;
-                
-                if (PastBlocksMass >= PastBlocksMin) {
-                        if ((PastRateAdjustmentRatio <= EventHorizonDeviationSlow) || (PastRateAdjustmentRatio >= EventHorizonDeviationFast)) { assert(BlockReading); break; }
-                }
-                if (BlockReading->pprev == NULL) { assert(BlockReading); break; }
-                BlockReading = BlockReading->pprev;
+    uint64_t             PastBlocksMass                  = 0;
+    int64_t              PastRateActualSeconds           = 0;
+    int64_t              PastRateTargetSeconds           = 0;
+    double               PastRateAdjustmentRatio         = double(1);
+    uint256              PastDifficultyAverage;
+    uint256              PastDifficultyAveragePrev;
+    uint256              BlockReadingDifficulty;
+    double               EventHorizonDeviation;
+    double               EventHorizonDeviationFast;
+    double               EventHorizonDeviationSlow;
+
+    static const int64_t TargetBlockSpacing              = 60;
+    unsigned int         TimeDaySeconds                  = 60 * 60 * 24;
+    int64_t              PastSecondsMin                  = TimeDaySeconds * 0.25;
+    int64_t              PastSecondsMax                  = TimeDaySeconds * 7;
+    uint64_t             PastBlocksMin                   = PastSecondsMin / TargetBlockSpacing;
+    uint64_t             PastBlocksMax                   = PastSecondsMax / TargetBlockSpacing;
+
+    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 ||
+        (uint64_t)BlockLastSolved->nHeight < PastBlocksMin) {
+        return Params().ProofOfWorkLimit(algo).GetCompact();
+    }
+    
+    int64_t LatestBlockTime = BlockLastSolved->GetBlockTime();
+    
+    for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
+        if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
+        PastBlocksMass++;
+
+        if (i == 1) {
+            PastDifficultyAverage.SetCompact(BlockReading->nBits);
+        } else {
+            BlockReadingDifficulty.SetCompact(BlockReading->nBits);
+            if (BlockReadingDifficulty > PastDifficultyAveragePrev) {
+                PastDifficultyAverage = PastDifficultyAveragePrev + ((BlockReadingDifficulty - PastDifficultyAveragePrev) / i);
+            } else {
+                PastDifficultyAverage = PastDifficultyAveragePrev - ((PastDifficultyAveragePrev - BlockReadingDifficulty) / i);
+            }
         }
+        PastDifficultyAveragePrev = PastDifficultyAverage;
+
+        if (LatestBlockTime < BlockReading->GetBlockTime()) {
+                LatestBlockTime = BlockReading->GetBlockTime();
+        }
+        PastRateActualSeconds = LatestBlockTime - BlockReading->GetBlockTime();
+        PastRateTargetSeconds = TargetBlockSpacing * PastBlocksMass;
+        PastRateAdjustmentRatio = double(1);
         
-        uint256 bnNew(PastDifficultyAverage);
+        if (PastRateActualSeconds < 1) { PastRateActualSeconds = 1; }
+        
         if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
-                bnNew *= PastRateActualSeconds;
-                bnNew /= PastRateTargetSeconds;
+            PastRateAdjustmentRatio = double(PastRateTargetSeconds) / double(PastRateActualSeconds);
         }
+        EventHorizonDeviation                   = 1 + (0.7084 * pow((double(PastBlocksMass)/double(144)), -1.228));
+        EventHorizonDeviationFast               = EventHorizonDeviation;
+        EventHorizonDeviationSlow               = 1 / EventHorizonDeviation;
+
+        if (PastBlocksMass >= PastBlocksMin) {
+            if ((PastRateAdjustmentRatio <= EventHorizonDeviationSlow) ||
+                (PastRateAdjustmentRatio >= EventHorizonDeviationFast)) {
+                assert(BlockReading);
+                break;
+            }
+        }
+        if (BlockReading->pprev == NULL) { assert(BlockReading); break; }
+        BlockReading = BlockReading->pprev;
+    }
+
+    uint256 bnNew(PastDifficultyAverage);
+    if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
+        bnNew *= PastRateActualSeconds;
+        bnNew /= PastRateTargetSeconds;
+    }
     if (bnNew > Params().ProofOfWorkLimit(algo)) { bnNew = Params().ProofOfWorkLimit(algo); }
-        
-    /// debug print
-    LogPrintf("Difficulty Retarget - Kimoto Gravity Well\n");
-    LogPrintf("PastRateAdjustmentRatio = %g\n", PastRateAdjustmentRatio);
-    LogPrintf("Before: %08x  %s\n", BlockLastSolved->nBits, uint256().SetCompact(BlockLastSolved->nBits).ToString().c_str());
-    LogPrintf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString().c_str());
-        
-        return bnNew.GetCompact();
+
+    // debug print
+
+        LogPrintf("Franko Multi Algo Gravity Well\n");
+    
+    LogPrintf("PastRateAdjustmentRatio =  %g    PastRateTargetSeconds = %d    PastRateActualSeconds = %d\n",
+               PastRateAdjustmentRatio, PastRateTargetSeconds, PastRateActualSeconds);
+    LogPrintf("Before: %08x  %s\n", BlockLastSolved->nBits, uint256().SetCompact(BlockLastSolved->nBits).ToString());
+    LogPrintf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
+
+    return bnNew.GetCompact();
 }
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
-{
-		int algo = pblock->GetAlgo();
 
-        static const int64_t        BlocksTargetSpacing                        = 60; // 60 seconds
-        unsigned int                TimeDaySeconds                                = 60 * 60 * 24;
-        int64_t                       PastSecondsMin                                = TimeDaySeconds * 0.25;
-        int64_t                       PastSecondsMax                                = TimeDaySeconds * 1;
-        uint64_t                      PastBlocksMin                                = PastSecondsMin / BlocksTargetSpacing;
-        uint64_t                      PastBlocksMax                                = PastSecondsMax / BlocksTargetSpacing;        
-        
-        return KimotoGravityWell(pindexLast, pblock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax, algo);
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
+{
+      return KimotoGravityWell(pindexLast, algo);
 }
 
 // FIXME algo is only needed here for a minimum work block.

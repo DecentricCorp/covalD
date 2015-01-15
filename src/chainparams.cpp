@@ -55,8 +55,8 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
  */
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
-        (     0, uint256("0x00000000b2c8fc5991e8c92c73ff66825827c6dd740217234541699ec5dc3677")) // Genesis
-        (     1, uint256("0x000be213b1b39612ac9ccc64f27a5d12668ae139f9252d9fc6ca327f95f03569")) // Airdrop
+        (     0, uint256("0x0000035cc3899836f94b588d61b0af526e7977e7fd18cae631eacf02bfdfcf0e")) // Genesis
+        (     1, uint256("0x00005b30b6c48f5a7d601707c43be8297615546bd601834dff656f66a702a846")) // Airdrop
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
@@ -69,7 +69,7 @@ static const Checkpoints::CCheckpointData data = {
 static Checkpoints::MapCheckpoints mapCheckpointsTestnet =
         boost::assign::map_list_of
         (   0, uint256("0x0000e80f6ba2da2d801a3ce187388d2200c86f85e07178dcea25772f872576f1"))
-        (   1, uint256("0x000be213b1b39612ac9ccc64f27a5d12668ae139f9252d9fc6ca327f95f03569")) // Airdrop
+        (   1, uint256("0x00005b30b6c48f5a7d601707c43be8297615546bd601834dff656f66a702a846")) // Airdrop
         ;
 static const Checkpoints::CCheckpointData dataTestnet = {
         &mapCheckpointsTestnet,
@@ -105,10 +105,12 @@ public:
         pchMessageStart[3] = 0xe9;
         vAlertPubKey = ParseHex("04a69ac17c75b0f4fa7b2985a5d40dd783f166afe942fd6face7714833497dfd53ebaa556fb8a559ccfac8e88795909c8f5b625db8384507d27ee4ac3baf344549");
         nDefaultPort = 3764;
-        bnProofOfWorkLimit[ALGO_SHA256D] = ~uint256(0) >> 28; // 2^28 = 134s at 2MH/s (CPU) 
-        // WARNING: This value cannot be less than the difficulty in the genesis block.
-        bnProofOfWorkLimit[ALGO_SCRYPT] = ~uint256(0) >> 18; // 2^18 = 131s at 2kH/s (CPU)
-        nSubsidyHalvingInterval = 210000;
+
+		//ALGO DIFFs
+        bnProofOfWorkLimit[ALGO_SHA256D] = ~uint256(0) >> 20; 
+        bnProofOfWorkLimit[ALGO_SCRYPT] = ~uint256(0) >> 20;
+        
+		nSubsidyHalvingInterval = 210000;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
@@ -118,7 +120,7 @@ public:
         nAirdrop = 1000000000;
         dInterestAPY = 5;
         // Airdrop coins are not checked for proof of work 
-        hashAirdropBlock.SetHex("0x000be213b1b39612ac9ccc64f27a5d12668ae139f9252d9fc6ca327f95f03569"); 
+        hashAirdropBlock.SetHex("0x00005b30b6c48f5a7d601707c43be8297615546bd601834dff656f66a702a846"); 
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
@@ -130,15 +132,15 @@ public:
          *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
          *   vMerkleTree: 4a5e1e
          */
-        const char* pszTimestamp = "Frawg";
+        const char* pszTimestamp = "Frogs Rally Around Notorious Kings Ohyea!";
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         genesis.nVersion = 1;
-        genesis.nTime    = 1415208967;
-        genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
-        genesis.nNonce   = 1524017540;
-        txNew.vin[0].scriptSig = CScript() << genesis.nBits << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
+        genesis.nTime    = 1421258087;
+        genesis.nBits    = 0x1e0ffff0; // 32 bits of leading zeros in PoW
+        genesis.nNonce   = 744661;
+        txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 50 * COIN;
         txNew.vout[0].scriptPubKey = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
         genesis.vtx.push_back(txNew);
@@ -146,10 +148,11 @@ public:
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
 
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x00000000b2c8fc5991e8c92c73ff66825827c6dd740217234541699ec5dc3677"));
-        assert(genesis.hashMerkleRoot == uint256("0x8ccdb8815b08653bef4677df85a2ac2280a45efb804b9c74c077ed0417f8e8f1"));
+        assert(hashGenesisBlock == uint256("0x0000035cc3899836f94b588d61b0af526e7977e7fd18cae631eacf02bfdfcf0e"));
+        assert(genesis.hashMerkleRoot == uint256("0x986b677d7d6f568006a8a897efb712eefb8219efa42038ca36c479ebe93fd573"));
 
         vSeeds.push_back(CDNSSeedData("ribbitchain.info", "ribbitchain.info"));
+
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
@@ -205,11 +208,9 @@ public:
         dInterestAPY = 5;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
-        genesis.nTime    = 1415208967;
-        genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
-        genesis.nNonce   = 1524017540;
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x00000000b2c8fc5991e8c92c73ff66825827c6dd740217234541699ec5dc3677"));
+        assert(hashGenesisBlock == uint256("0x0000035cc3899836f94b588d61b0af526e7977e7fd18cae631eacf02bfdfcf0e"));
+
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -263,12 +264,13 @@ public:
             bnProofOfWorkLimit[i] = ~uint256(0) >> 1;
         dInterestAPY = 5;
 
-        genesis.nTime    = 1415208967;
-        genesis.nBits    = 0x1d00ffff; // 32 bits of leading zeros in PoW
-        genesis.nNonce   = 1524017540;
+        genesis.nTime    = 1421258087;
+        genesis.nBits    = 0x1e0Ffff0; // 32 bits of leading zeros in PoW
+        genesis.nNonce   = 744661;
+
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 18444;
-        assert(hashGenesisBlock == uint256("0x00000000b2c8fc5991e8c92c73ff66825827c6dd740217234541699ec5dc3677"));
+        assert(hashGenesisBlock == uint256("0x0000035cc3899836f94b588d61b0af526e7977e7fd18cae631eacf02bfdfcf0e"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
