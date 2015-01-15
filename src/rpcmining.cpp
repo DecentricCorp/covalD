@@ -342,8 +342,8 @@ Value getblocktemplate(const Array& params, bool fHelp)
             "\nArguments:\n"
             "1. \"jsonrequestobject\"       (string, optional) A json object in the following spec\n"
             "     {\n"
-            "       \"mode\":\"template\"    (string, optional) This must be set to \"template\" or omitted\n"
-            "       \"algorithm\": n         (numeric, optional) The mining algorithm to use\n"
+            "       \"mode\":\"template\",   (string, optional) This must be set to \"template\" or omitted\n"
+            "       \"algorithm\": \"xxxx\", (string, optional) The mining algorithm to use, either \"sha256d\" or \"scrypt\"\n"
             "       \"capabilities\":[       (array, optional) A list of strings\n"
             "           \"support\"           (string) client side supported feature, 'longpoll', 'coinbasetxn', 'coinbasevalue', 'proposal', 'serverlist', 'workid'\n"
             "           ,...\n"
@@ -441,8 +441,17 @@ Value getblocktemplate(const Array& params, bool fHelp)
         }
 
         const Value& algorithmval = find_value(oparam, "algorithm");
-        if (algorithmval.type() == int_type)
+        // Josh: Support some well-known string constants, not just integer, for algo selection
+	if (algorithmval.type() == int_type) {
             algo = algorithmval.get_int();
+	} else if (algorithmval.type() == str_type) {
+	    if (algorithmval.get_str() == "sha256d") {
+	        algo = ALGO_SHA256D;
+	    }
+	    if (algorithmval.get_str() == "scrypt") {
+	        algo = ALGO_SCRYPT;
+	    }
+	}
     }
 
     if (strMode != "template")
@@ -609,6 +618,13 @@ Value getblocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("curtime", pblock->GetBlockTime()));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
     result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight+1)));
+    // Josh: Support bfgminer algorithm autodetection
+    if (algo == ALGO_SHA256D) {
+	result.push_back(Pair("algorithm", "sha256d"));
+    }
+    if (algo == ALGO_SCRYPT) {
+	result.push_back(Pair("algorithm", "scrypt"));
+    }
 
     return result;
 }
