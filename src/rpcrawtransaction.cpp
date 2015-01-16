@@ -324,7 +324,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
             "     ]\n"
             "2. \"addresses\"           (string, required) a json object with addresses as keys and amounts as values\n"
             "    {\n"
-            "      \"address\": x.xxx   (numeric, required) The key is the RibbitRewards address, the value is the RR amount\n"
+            "      \"address\": x.xxx   (numeric, required) The key is the RibbitRewards address, the value is the RBR amount\n"
             "      ,...\n"
             "    }\n"
 
