@@ -117,7 +117,7 @@ bool AppInit(int argc, char* argv[])
         }
 #ifndef WIN32
         fDaemon = GetBoolArg("-daemon", false);
-        if #(fDaemon)
+        if (fDaemon)
         {
             fprintf(stdout, "RibbitRewards server starting\n");
 
