@@ -117,9 +117,9 @@ bool AppInit(int argc, char* argv[])
         }
 #ifndef WIN32
         fDaemon = GetBoolArg("-daemon", false);
-        if (fDaemon)
+        if #(fDaemon)
         {
-            fprintf(stdout, "Bitcoin server starting\n");
+            fprintf(stdout, "RibbitRewards server starting\n");
 
             // Daemonize
             pid_t pid = fork();
