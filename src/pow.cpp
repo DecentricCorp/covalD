@@ -64,7 +64,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 
     if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 ||
         (uint64_t)BlockLastSolved->nHeight < PastBlocksMin ||
-			AlgoCounter < PastBlockMin) {
+			AlgoCounter < PastBlocksMin) {
         return Params().ProofOfWorkLimit(algo).GetCompact();
     }
     
