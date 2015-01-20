@@ -18,23 +18,22 @@
 unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	
 	unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
-    LogPrintf("Proof Of Work Limit For Algo %i, is % i\n", algo, nProofOfWorkLimit);
+    LogPrintf("Proof Of Work Limit For Algo % i, is % i \n", algo, nProofOfWorkLimit);
 
     // Genesis block
     if (pindexLast == NULL){
-		LogPrintf("Genesis Block Difficulty");
+		LogPrintf("Genesis Block Difficulty\n");
         return nProofOfWorkLimit;
 	}
 	const CBlockIndex* pindexPrevAlgo = GetLastBlockIndexForAlgo(pindexLast, algo);
     if (pindexPrevAlgo == NULL){
-		LogPrintf("pindexPrevAlgo == NULL for Algo %i, is % i\n", algo, nProofOfWorkLimit);
+		LogPrintf("pindexPrevAlgo == NULL for Algo % i, is % i \n", algo, nProofOfWorkLimit);
         return nProofOfWorkLimit;
 	}
     /* Franko Multi Algo Gravity Well */
     const CBlockIndex   *BlockLastSolved                 = pindexPrevAlgo;
-    const CBlockIndex   *BlockReading                    = pindexPrevAlgo;
+    const CBlockIndex   *BlockReading                    = pindexLast;
 
-	int					 AlgoCounter					 = 0;
     uint64_t             PastBlocksMass                  = 0;
     int64_t              PastRateActualSeconds           = 0;
     int64_t              PastRateTargetSeconds           = 0;
@@ -46,37 +45,22 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     double               EventHorizonDeviationFast;
     double               EventHorizonDeviationSlow;
 
-    static const int64_t TargetBlockSpacing              = 60; // == 1 minute
+    static const int64_t TargetBlockSpacing              = 60;
     unsigned int         TimeDaySeconds                  = 60 * 60 * 24;
-    int64_t              PastSecondsMin                  = TimeDaySeconds * 0.25; // == 6300 Seconds
-    int64_t              PastSecondsMax                  = TimeDaySeconds * 7; // == 604800 Seconds
-    uint64_t             PastBlocksMin                   = PastSecondsMin / TargetBlockSpacing; // == 360 blocks
-    uint64_t             PastBlocksMax                   = PastSecondsMax / TargetBlockSpacing; // == 10080 blocks
-
-	//loop through and count the blocks found by the algo
-	for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
-        if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
-		// Makes sure we are only calculating blocks from the specified algo
-		if (BlockReading->GetAlgo() != algo){ continue; }
-		AlgoCounter++;
-		BlockReading = BlockReading->pprev;
-	}
+    int64_t              PastSecondsMin                  = TimeDaySeconds * 0.25;
+    int64_t              PastSecondsMax                  = TimeDaySeconds * 7;
+    uint64_t             PastBlocksMin                   = PastSecondsMin / TargetBlockSpacing;
+    uint64_t             PastBlocksMax                   = PastSecondsMax / TargetBlockSpacing;
 
     if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 ||
-        (uint64_t)BlockLastSolved->nHeight < PastBlocksMin ||
-			AlgoCounter < PastBlockMin) {
+        (uint64_t)BlockLastSolved->nHeight < PastBlocksMin) {
         return Params().ProofOfWorkLimit(algo).GetCompact();
     }
     
     int64_t LatestBlockTime = BlockLastSolved->GetBlockTime();
-
-
-    BlockReading = pindexPrevAlgo;
+    
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
-        if (PastBlocksMax > 0 && i > AlgoCounter) { break; }
-		// Makes sure we are only calculating blocks from the specified algo
-		if (BlockReading->GetAlgo() != algo){ continue; }
-
+        if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
         PastBlocksMass++;
 
         if (i == 1) {
@@ -136,6 +120,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 
     return bnNew.GetCompact();
 }
+
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
 {
