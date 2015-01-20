@@ -57,14 +57,14 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
         if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
 		// Makes sure we are only calculating blocks from the specified algo
-		if (BlockReading->GetAlgo() != algo){ continue; }
+		if (BlockReading->GetAlgo() != algo){ BlockReading = BlockReading->pprev; continue; }
 		AlgoCounter++;
 		BlockReading = BlockReading->pprev;
 	}
 
     if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 ||
         (uint64_t)BlockLastSolved->nHeight < PastBlocksMin ||
-			AlgoCounter < PastBlockMin) {
+			AlgoCounter < PastBlocksMin) {
         return Params().ProofOfWorkLimit(algo).GetCompact();
     }
     
@@ -75,7 +75,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
         if (PastBlocksMax > 0 && i > AlgoCounter) { break; }
 		// Makes sure we are only calculating blocks from the specified algo
-		if (BlockReading->GetAlgo() != algo){ continue; }
+		if (BlockReading->GetAlgo() != algo){ BlockReading = BlockReading->pprev; continue; }
 
         PastBlocksMass++;
 
