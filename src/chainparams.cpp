@@ -151,11 +151,8 @@ public:
         assert(hashGenesisBlock == uint256("0x0000035cc3899836f94b588d61b0af526e7977e7fd18cae631eacf02bfdfcf0e"));
         assert(genesis.hashMerkleRoot == uint256("0x986b677d7d6f568006a8a897efb712eefb8219efa42038ca36c479ebe93fd573"));
 
-        vSeeds.push_back(
-            CDNSSeedData("ribbitchain.info", "ribbitchain.info"), 
-            CDNSSeedData("Thomas Kerin", "ribbitcoin.bitwasp.co")
-        );
-
+        vSeeds.push_back(CDNSSeedData("ribbitchain.info", "ribbitchain.info"));
+        vSeeds.push_back(CDNSSeedData("Thomas Kerin", "ribbitcoin.bitwasp.co"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
