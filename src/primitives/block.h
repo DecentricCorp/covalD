@@ -12,6 +12,29 @@
 #include "pow.h"
 #include "crypto/scrypt.h"
 
+class CAuxPow;
+
+template <typename Stream>
+int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action);
+
+template <typename Stream>
+int ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionUnserialize ser_action);
+
+template <typename Stream>
+int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionGetSerializeSize ser_action);
+
+// primary version
+//static const int BLOCK_VERSION_DEFAULT = (1 << 0);
+static const int BLOCK_VERSION_AUXPOW = (1 << 8);
+static const int BLOCK_VERSION_CHAIN_START = (1 << 16);
+static const int BLOCK_VERSION_CHAIN_END = (1 << 30);
+
+// Unitus aux chain ID = 0x007D (155)
+static const int AUXPOW_CHAIN_ID = 0x007D;
+static const int AUXPOW_START_MAINNET = 1; //TODO change me
+static const int AUXPOW_START_TESTNET = 1;
+
+
 /** The maximum allowed size for a serialized block, in bytes (network rule) */
 static const unsigned int MAX_BLOCK_SIZE = 1000000;
 
@@ -33,6 +56,7 @@ public:
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
+		boost::shared_ptr<CAuxPow> auxpow;
 
     CBlockHeader()
     {
@@ -52,12 +76,16 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+
+				nSerSize += ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
     }
+
+	void SetAuxPow(CAuxPow* pow);
 
     void SetNull()
     {
-        nVersion = CBlockHeader::CURRENT_VERSION;
-        hashPrevBlock = 0;
+		nVersion = CBlockHeader::CURRENT_VERSION | (AUXPOW_CHAIN_ID * BLOCK_VERSION_CHAIN_START);
+		hashPrevBlock = 0;
         hashMerkleRoot = 0;
         nTime = 0;
         nBits = 0;
@@ -124,7 +152,8 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
-        return block;
+				block.auxpow         = auxpow;
+		return block;
     }
 
     // Build the in-memory merkle tree for this block and return the merkle root.
