@@ -491,9 +491,11 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
                hash.GetHex().c_str(),
                auxpow->GetParentBlockHash(algo).GetHex().c_str(),
                hashTarget.GetHex().c_str());
-    }else (hashPoW > hashTarget)
+    }else{
+		
+		if (hashPoW > hashTarget)
         return false;
-
+	}
     // Found a solution
     {
         LOCK(cs_main);
