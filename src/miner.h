@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include "pow.h"
+#include "auxpow.h"
 
 class CBlock;
 class CBlockHeader;
@@ -15,6 +16,7 @@ class CBlockIndex;
 class CReserveKey;
 class CScript;
 class CWallet;
+class CAuxPow;
 
 struct CBlockTemplate;
 
