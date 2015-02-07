@@ -12,6 +12,7 @@
 #include "main.h"
 #include "net.h"
 #include "pow.h"
+#include "auxpow.h"
 #include "timedata.h"
 #include "random.h"
 #include "util.h"
@@ -472,11 +473,25 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 {
     LogPrintf("%s\n", pblock->ToString());
     LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
-    int algo = pblock->GetAlgo();
+    
+	int algo = pblock->GetAlgo();
     uint256 hashPoW = pblock->GetHash(algo);
     uint256 hashTarget = uint256().SetCompact(pblock->nBits);
+	CAuxPow *auxpow = pblock->auxpow.get();
+	
+    if (auxpow != NULL) {
+        if (!auxpow->Check(pblock->GetHash(), pblock->GetChainID()))
+            return error("AUX POW is not valid");
 
-    if (hashPoW > hashTarget)
+        if (auxpow->GetParentBlockHash(algo) > hashTarget)
+            return error("AUX POW parent hash %s is not under target %s", auxpow->GetParentBlockHash(algo).GetHex().c_str(), hashTarget.GetHex().c_str());
+        
+        // print to log
+        LogPrintf("UnitusMiner: AUX proof-of-work found; our hash: %s ; parent hash: %s ; target: %s\n",
+               hash.GetHex().c_str(),
+               auxpow->GetParentBlockHash(algo).GetHex().c_str(),
+               hashTarget.GetHex().c_str());
+    }else (hashPoW > hashTarget)
         return false;
 
     // Found a solution

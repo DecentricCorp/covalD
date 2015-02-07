@@ -75,6 +75,7 @@ inline std::string GetAlgoName(int Algo)
     return std::string("unknown");
 }
 
+
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, 
         const CBlockHeader *pblock, int algo);
 
