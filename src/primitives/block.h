@@ -11,6 +11,7 @@
 #include "uint256.h"
 #include "pow.h"
 #include "crypto/scrypt.h"
+#include <boost/shared_ptr.hpp>
 
 class CAuxPow;
 

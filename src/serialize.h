@@ -754,6 +754,7 @@ struct CSerActionSerialize
 {
     bool ForRead() const { return false; }
 };
+class CSerActionGetSerializeSize { };
 struct CSerActionUnserialize
 {
     bool ForRead() const { return true; }
