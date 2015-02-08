@@ -78,15 +78,17 @@ public:
         READWRITE(nBits);
         READWRITE(nNonce);
 
-				nSerSize += ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
+
+	ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
+//	nSerSize += ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
     }
 
 	void SetAuxPow(CAuxPow* pow);
 
     void SetNull()
     {
-		nVersion = CBlockHeader::CURRENT_VERSION | (AUXPOW_CHAIN_ID * BLOCK_VERSION_CHAIN_START);
-		hashPrevBlock = 0;
+        nVersion = CBlockHeader::CURRENT_VERSION | (AUXPOW_CHAIN_ID * BLOCK_VERSION_CHAIN_START);
+        hashPrevBlock = 0;
         hashMerkleRoot = 0;
         nTime = 0;
         nBits = 0;

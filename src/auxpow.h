@@ -5,6 +5,7 @@
 #define BITCOIN_AUXPOW_H
 
 #include "main.h"
+#include "wallet.h"
 
 class CAuxPow : public CMerkleTx
 {
@@ -24,16 +25,19 @@ public:
     unsigned int nChainIndex;
     CBlockHeader parentBlockHeader;
 
-    IMPLEMENT_SERIALIZE
+    ADD_SERIALIZE_METHODS
     (
-        nSerSize += SerReadWrite(s, *(CMerkleTx*)this, nType, nVersion, ser_action);
+        SerReadWrite(s, *(CMerkleTx*)this, nType, nVersion, ser_action);
+//      nSerSize += SerReadWrite(s, *(CMerkleTx*)this, nType, nVersion, ser_action);
+
         nVersion = this->nVersion;
         READWRITE(vChainMerkleBranch);
         READWRITE(nChainIndex);
 
         // Always serialize the saved parent block as header so that the size of CAuxPow
         // is consistent.
-        nSerSize += SerReadWrite(s, parentBlockHeader, nType, nVersion, ser_action);
+        SerReadWrite(s, parentBlockHeader, nType, nVersion, ser_action);
+//        nSerSize += SerReadWrite(s, parentBlockHeader, nType, nVersion, ser_action);
     )
 
     bool Check(uint256 hashAuxBlock, int nChainID);
