@@ -18,7 +18,7 @@ QList<BitcoinUnits::Unit> BitcoinUnits::availableUnits()
 {
     QList<BitcoinUnits::Unit> unitlist;
     unitlist.append(RBR);
-    unitlist.append(Tad);
+    // unitlist.append(Tad);
     // unitlist.append(uBTC);
     return unitlist;
 }
@@ -28,7 +28,7 @@ bool BitcoinUnits::valid(int unit)
     switch(unit)
     {
     case RBR:
-    case Tad:
+    //case Tad:
     //case uBTC:
         return true;
     default:
@@ -41,7 +41,7 @@ QString BitcoinUnits::id(int unit)
     switch(unit)
     {
     case RBR: return QString("rbr");
-    case Tad: return QString("tad");
+    //case Tad: return QString("tad");
     //case uBTC: return QString("ubtc");
     default: return QString("???");
     }
@@ -52,7 +52,7 @@ QString BitcoinUnits::name(int unit)
     switch(unit)
     {
     case RBR: return QString("RBR");
-    case Tad: return QString("Tad");
+    //case Tad: return QString("Tad");
     //case uBTC: return QString::fromUtf8("μBTC");
     default: return QString("???");
     }
@@ -62,8 +62,8 @@ QString BitcoinUnits::description(int unit)
 {
     switch(unit)
     {
-    case RBR: return QString("Ribbitcoins");
-    case Tad: return QString("Tad (1 / 1" THIN_SP_UTF8 "000)");
+    case RBR: return QString("Ribbitrewards");
+    //case Tad: return QString("Tad (1 / 1" THIN_SP_UTF8 "000)");
     // case uBTC: return QString("Micro-Bitcoins (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
@@ -74,7 +74,7 @@ qint64 BitcoinUnits::factor(int unit)
     switch(unit)
     {
     case RBR:  return 100000000;
-    case Tad: return 100000;
+    //case Tad: return 100000;
     // case uBTC: return 100;
     default:   return 100000000;
     }
@@ -85,7 +85,7 @@ int BitcoinUnits::decimals(int unit)
     switch(unit)
     {
     case RBR: return 8;
-    case Tad: return 5;
+    //case Tad: return 5;
     //case uBTC: return 2;
     default: return 0;
     }

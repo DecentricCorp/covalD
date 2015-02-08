@@ -56,8 +56,8 @@ public:
      */
     enum Unit
     {
-        RBR,
-        Tad
+        RBR
+        // Tad
     };
 
     enum SeparatorStyle
