@@ -24,17 +24,15 @@ public:
     unsigned int nChainIndex;
     CBlockHeader parentBlockHeader;
 
-    IMPLEMENT_SERIALIZE
-    (
-        nSerSize += SerReadWrite(s, *(CMerkleTx*)this, nType, nVersion, ser_action);
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(*(CMerkleTx*)this);
         nVersion = this->nVersion;
         READWRITE(vChainMerkleBranch);
         READWRITE(nChainIndex);
-
-        // Always serialize the saved parent block as header so that the size of CAuxPow
-        // is consistent.
-        nSerSize += SerReadWrite(s, parentBlockHeader, nType, nVersion, ser_action);
-    )
+    }
 
     bool Check(uint256 hashAuxBlock, int nChainID);
 

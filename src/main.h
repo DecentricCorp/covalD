@@ -96,6 +96,14 @@ static const unsigned int DATABASE_WRITE_INTERVAL = 3600;
 /** Maximum length of reject messages. */
 static const unsigned int MAX_REJECT_MESSAGE_LENGTH = 111;
 
+/** AuxPow Block versions for sanity checks. */
+/** bare AuxPoW block version which will be modulated further. */
+static const int BLOCK_VERSION_AUXPOW_BARE = CBlockHeader::CURRENT_VERSION | (AUXPOW_CHAIN_ID * BLOCK_VERSION_CHAIN_START);
+/** version when AuxPoW exists on the block */
+static const int BLOCK_VERSION_AUXPOW_WITH_AUX = BLOCK_VERSION_AUXPOW_BARE | BLOCK_VERSION_AUXPOW;
+/** version when no AuxPoW exists on the block */
+static const int BLOCK_VERSION_AUXPOW_WITHOUT_AUX = BLOCK_VERSION_AUXPOW_BARE & ~BLOCK_VERSION_AUXPOW;
+
 /** "reject" message codes */
 static const unsigned char REJECT_MALFORMED = 0x01;
 static const unsigned char REJECT_INVALID = 0x10;
@@ -194,6 +202,9 @@ bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, b
 /** Find the best known block, and make it the tip of the block chain */
 bool ActivateBestChain(CValidationState &state, CBlock *pblock = NULL);
 CAmount GetBlockValue(int nHeight, const CAmount& nFees);
+
+/** Determine whether the block version is modulated with auxpow logic */
+bool IsAuxPowVersion(int nVersion);
 
 /** Create a new block index entry for a given block hash */
 CBlockIndex * InsertBlockIndex(uint256 hash);
@@ -373,6 +384,9 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
 
 /** Apply the effects of this block (with given index) on the UTXO set represented by coins */
 bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& coins, bool fJustCheck = false);
+
+// Get the block at which AuxPoW is enabled for this network
+int GetAuxPowStartBlock();
 
 /** Context-independent validity checks */
 bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, bool fCheckPOW = true);
