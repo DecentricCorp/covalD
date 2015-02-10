@@ -295,12 +295,17 @@ class CDiskBlockIndex : public CBlockIndex
 public:
     uint256 hashPrev;
 
+	boost::shared_ptr<CAuxPow> auxpow;
+
     CDiskBlockIndex() {
         hashPrev = 0;
+		auxpow.reset();
     }
 
-    explicit CDiskBlockIndex(CBlockIndex* pindex) : CBlockIndex(*pindex) {
+    //explicit CDiskBlockIndex(CBlockIndex* pindex) : CBlockIndex(*pindex) {
+	explicit CDiskBlockIndex(CBlockIndex* pindex, boost::shared_ptr<CAuxPow> auxpow) : CBlockIndex(*pindex) {
         hashPrev = (pprev ? pprev->GetBlockHash() : 0);
+		this->auxpow = auxpow;
     }
 
     ADD_SERIALIZE_METHODS;
@@ -327,6 +332,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+		ReadWriteAuxPow(s, auxpow, nType, this->nVersion, ser_action);
     }
 
     uint256 GetBlockHash() const
