@@ -11,6 +11,7 @@
 #include "uint256.h"
 #include "pow.h"
 #include "crypto/scrypt.h"
+#include <boost/shared_ptr.hpp>
 
 class CAuxPow;
 
@@ -56,7 +57,7 @@ public:
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
-		boost::shared_ptr<CAuxPow> auxpow;
+	boost::shared_ptr<CAuxPow> auxpow;
 
     CBlockHeader()
     {
@@ -76,8 +77,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-
-				nSerSize += ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
+		ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
     }
 
 	void SetAuxPow(CAuxPow* pow);
