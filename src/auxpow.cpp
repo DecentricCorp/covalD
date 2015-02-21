@@ -3,6 +3,7 @@
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
 #include "script/script.h"
 #include "auxpow.h"
+#include "util.h"
 #include "init.h"
 
 using namespace std;
