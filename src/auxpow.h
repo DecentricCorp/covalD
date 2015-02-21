@@ -5,6 +5,7 @@
 #define BITCOIN_AUXPOW_H
 
 #include "main.h"
+#include "wallet.h"
 
 class CAuxPow : public CMerkleTx
 {
@@ -41,7 +42,7 @@ public:
         return parentBlockHeader.GetPoWHash(algo);
     }
 };
-
+/*
 template <typename Stream>
 int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionGetSerializeSize ser_action)
 {
@@ -51,7 +52,7 @@ int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nTy
     }
     return 0;
 }
-
+*/
 template <typename Stream>
 int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action)
 {
