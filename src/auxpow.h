@@ -39,7 +39,7 @@ public:
 
     uint256 GetParentBlockHash(int algo)
     {
-        return parentBlockHeader.GetPoWHash(algo);
+        return parentBlockHeader.GetHash(algo);
     }
 };
 /*
