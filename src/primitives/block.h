@@ -92,6 +92,12 @@ public:
         nNonce = 0;
     }
 
+    int GetChainID() const
+    {
+        return nVersion / BLOCK_VERSION_CHAIN_START;
+    }
+
+
     bool IsNull() const
     {
         return (nBits == 0);
