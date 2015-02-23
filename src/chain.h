@@ -295,7 +295,7 @@ class CDiskBlockIndex : public CBlockIndex
 public:
     uint256 hashPrev;
 
-	boost::shared_ptr<CAuxPow> auxpow;
+    boost::shared_ptr<CAuxPow> auxpow;
 
     CDiskBlockIndex() {
         hashPrev = 0;

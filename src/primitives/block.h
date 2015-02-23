@@ -77,7 +77,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-		ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
+        ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
     }
 
 	void SetAuxPow(CAuxPow* pow);
@@ -158,8 +158,8 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
-				block.auxpow         = auxpow;
-		return block;
+        block.auxpow         = auxpow;
+        return block;
     }
 
     // Build the in-memory merkle tree for this block and return the merkle root.
