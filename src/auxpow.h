@@ -54,28 +54,22 @@ int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nTy
 }
 */
 template <typename Stream>
-int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action)
+void ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action)
 {
     if (nVersion & BLOCK_VERSION_AUXPOW)
-    {
-        return SerReadWrite(s, *auxpow, nType, nVersion, ser_action);
-    }
-    return 0;
+        SerReadWrite(s, *auxpow, nType, nVersion, ser_action);
 }
 
 template <typename Stream>
-int ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionUnserialize ser_action)
+void ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionUnserialize ser_action)
 {
     if (nVersion & BLOCK_VERSION_AUXPOW)
     {
         auxpow.reset(new CAuxPow());
-        return SerReadWrite(s, *auxpow, nType, nVersion, ser_action);
+        SerReadWrite(s, *auxpow, nType, nVersion, ser_action);
     }
     else
-    {
         auxpow.reset();
-        return 0;
-    }
 }
 
 extern void RemoveMergedMiningHeader(std::vector<unsigned char>& vchAux);
