@@ -1,4 +1,4 @@
-8// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -20,6 +20,7 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "utilmoneystr.h"
+
 
 #include <sstream>
 
@@ -2372,9 +2373,6 @@ bool ReceivedBlockTransactions(const CBlock &block, CValidationState& state, CBl
 //   (if two have the same ID, they can't be merge mined together)
 int GetAuxPowStartBlock()
 {
-    if (TestNet())
-        return AUXPOW_START_TESTNET;
-    else
         return AUXPOW_START_MAINNET;
 }
 
@@ -2387,7 +2385,7 @@ bool CBlockHeader::CheckProofOfWork(int nHeight) const
         // - this block must have our chain ID
         // - parent block must not have the same chain ID (see CAuxPow::Check)
         // - index of this chain in chain merkle tree must be pre-determined (see CAuxPow::Check)
-        if (!TestNet() && nHeight != INT_MAX && GetChainID() != AUXPOW_CHAIN_ID)
+        if (nHeight != INT_MAX && GetChainID() != AUXPOW_CHAIN_ID)
             return error("CheckProofOfWork() : block (chainID=%d) does not have our chain ID (chainID=%d)", GetChainID(),AUXPOW_CHAIN_ID);
 
         if (auxpow.get() != NULL)
@@ -2401,7 +2399,7 @@ bool CBlockHeader::CheckProofOfWork(int nHeight) const
         else
         {
             // Check proof of work matches claimed amount
-            if (!::CheckProofOfWork(GetPoWHash(algo), nBits, algo))
+            if (!::CheckProofOfWork(GetHash(algo), nBits, algo))
                 return error("CheckProofOfWork() : proof of work failed");
         }
     }
@@ -2413,7 +2411,7 @@ bool CBlockHeader::CheckProofOfWork(int nHeight) const
         }
 
         // Check if proof of work marches claimed amount
-        if (!::CheckProofOfWork(GetPoWHash(algo), nBits, algo))
+        if (!::CheckProofOfWork(GetHash(algo), nBits, algo))
             return error("CheckProofOfWork() : proof of work failed");
     }
     return true;

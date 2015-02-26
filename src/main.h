@@ -41,6 +41,7 @@
 
 class CBlockIndex;
 class CBlockTreeDB;
+class CBlockHeader;
 class CBloomFilter;
 class CInv;
 class CScriptCheck;
