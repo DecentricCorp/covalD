@@ -16,10 +16,10 @@
 class CAuxPow;
 
 template <typename Stream>
-int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action);
+void ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action);
 
 template <typename Stream>
-int ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionUnserialize ser_action);
+void ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionUnserialize ser_action);
 
 //template <typename Stream>
 //int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionGetSerializeSize ser_action);
@@ -77,7 +77,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-		ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
+        ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
     }
 
 	void SetAuxPow(CAuxPow* pow);
@@ -111,6 +111,8 @@ public:
     {
         return (int64_t)nTime;
     }
+ 
+    bool CheckProofOfWork(int nHeight) const;
 };
 
 
@@ -158,8 +160,8 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
-				block.auxpow         = auxpow;
-		return block;
+        block.auxpow         = auxpow;
+        return block;
     }
 
     // Build the in-memory merkle tree for this block and return the merkle root.
