@@ -1846,6 +1846,8 @@ enum FlushStateMode {
 bool static FlushStateToDisk(CValidationState &state, FlushStateMode mode) {
     LOCK(cs_main);
     static int64_t nLastWrite = 0;
+	CBlock block;
+
     if ((mode == FLUSH_STATE_ALWAYS) ||
         ((mode == FLUSH_STATE_PERIODIC || mode == FLUSH_STATE_IF_NEEDED) && pcoinsTip->GetCacheSize() > nCoinCacheSize) ||
         (mode == FLUSH_STATE_PERIODIC && GetTimeMicros() > nLastWrite + DATABASE_WRITE_INTERVAL * 1000000)) {
@@ -1871,7 +1873,7 @@ bool static FlushStateToDisk(CValidationState &state, FlushStateMode mode) {
             return state.Abort("Failed to write to block index");
         }
         for (set<CBlockIndex*>::iterator it = setDirtyBlockIndex.begin(); it != setDirtyBlockIndex.end(); ) {
-             if (!pblocktree->WriteBlockIndex(CDiskBlockIndex(*it))) {
+             if (!pblocktree->WriteBlockIndex(CDiskBlockIndex(*it, block.auxpow))) {
                  return state.Abort("Failed to write to block index");
              }
              setDirtyBlockIndex.erase(it++);

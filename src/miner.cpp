@@ -487,8 +487,8 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
             return error("AUX POW parent hash %s is not under target %s", auxpow->GetParentBlockHash(algo).GetHex().c_str(), hashTarget.GetHex().c_str());
         
         // print to log
-        LogPrintf("UnitusMiner: AUX proof-of-work found; our hash: %s ; parent hash: %s ; target: %s\n",
-               hash.GetHex().c_str(),
+        LogPrintf("Ribbit Miner: AUX proof-of-work found; our hash: %s ; parent hash: %s ; target: %s\n",
+               hashPoW.GetHex().c_str(),
                auxpow->GetParentBlockHash(algo).GetHex().c_str(),
                hashTarget.GetHex().c_str());
     }else{
