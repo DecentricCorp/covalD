@@ -17,6 +17,8 @@
 #include "db.h"
 #include "wallet.h"
 #endif
+#include "timedata.h"
+#include "auxpow.h"
 
 #include <stdint.h>
 
@@ -27,6 +29,9 @@
 
 using namespace json_spirit;
 using namespace std;
+
+// Josh: I tried to add this to auxpow.h but it crashed the compiler!
+extern void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce, std::vector<unsigned char>& vchAux);
 
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
@@ -746,6 +751,7 @@ Value estimatepriority(const Array& params, bool fHelp)
 
     return mempool.estimatePriority(nBlocks);
 }
+
 #ifdef ENABLE_WALLET
 Value getworkaux(const Array& params, bool fHelp)
 {
@@ -813,7 +819,7 @@ Value getworkaux(const Array& params, bool fHelp)
             nStart = GetTime();
 
             // Create new block
-            pblocktemplate = CreateNewBlockWithKey(*pMiningKey, miningAlgo);
+            pblocktemplate = CreateNewBlockWithKey(reservekey, miningAlgo);
             if (!pblocktemplate)
                 throw JSONRPCError(-7, "Out of memory");
             vNewBlockTemplate.push_back(pblocktemplate);
@@ -835,7 +841,9 @@ Value getworkaux(const Array& params, bool fHelp)
         char pmidstate[32];
         char pdata[128];
         char phash1[64];
-        FormatHashBuffers(pblock, pmidstate, pdata, phash1);
+        
+	// Josh TODO: Where is this function?
+	//FormatHashBuffers(pblock, pmidstate, pdata, phash1);
 
         uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
 
@@ -857,9 +865,11 @@ Value getworkaux(const Array& params, bool fHelp)
         CBlock* pdata = (CBlock*)&vchData[0];
 
         // Byte reverse
-        for (int i = 0; i < 128/4; i++)
-            ((unsigned int*)pdata)[i] = ByteReverse(((unsigned int*)pdata)[i]);
-
+        for (int i = 0; i < 128/4; i++) {
+		// Josh TODO: Where is this function?
+		//((unsigned int*)pdata)[i] = ByteReverse(((unsigned int*)pdata)[i]);
+	}
+	
         // Get saved block
         if (!mapNewBlock.count(pdata->hashMerkleRoot))
             return false;
@@ -884,8 +894,13 @@ Value getworkaux(const Array& params, bool fHelp)
         RemoveMergedMiningHeader(vchAux);
 
         unsigned int nHeight = chainActive.Tip()->nHeight+1; // Height first in coinbase required for block.version=2
-        pblock->vtx[0].vin[0].scriptSig = MakeCoinbaseWithAux(nHeight, nExtraNonce, vchAux);
-        pblock->hashMerkleRoot = pblock->BuildMerkleTree();
+        
+        // Josh: Can't change fields of CTransaction directly anymore, have to launder through CMutableTransaction
+        CMutableTransaction tempTx(pblock->vtx[0]);
+        tempTx.vin[0].scriptSig = MakeCoinbaseWithAux(nHeight, nExtraNonce, vchAux);
+        pblock->vtx[0] = CTransaction(tempTx);
+	
+	pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
         if (params.size() > 2)
         {
@@ -901,7 +916,7 @@ Value getworkaux(const Array& params, bool fHelp)
                 pow.vChainMerkleBranch.push_back(nHash);
             }
 
-            pow.SetMerkleBranch(pblock);
+            pow.SetMerkleBranch(*pblock);
             pow.nChainIndex = nChainIndex;
             pow.parentBlockHeader = *pblock;
             CDataStream ss(SER_GETHASH, PROTOCOL_VERSION);
@@ -976,7 +991,7 @@ Value getauxblock(const Array& params, bool fHelp)
             nStart = GetTime();
 
             // Create new block with nonce = 0 and extraNonce = 1
-            pblocktemplate = CreateNewBlockWithKey(*pMiningKey, miningAlgo);
+            pblocktemplate = CreateNewBlockWithKey(reservekey, miningAlgo);
             if (!pblocktemplate)
                 throw JSONRPCError(-7, "Out of memory");
 
