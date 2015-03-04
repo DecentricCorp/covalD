@@ -74,4 +74,8 @@ void ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, i
 
 extern void RemoveMergedMiningHeader(std::vector<unsigned char>& vchAux);
 extern CScript MakeCoinbaseWithAux(unsigned int nBits, unsigned int nExtraNonce, std::vector<unsigned char>& vchAux);
+
+// Josh: For some reason, exposing this here will crash the compiler!
+// extern void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce, std::vector<unsigned char>& vchAux);
+
 #endif
