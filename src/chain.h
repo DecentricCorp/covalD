@@ -295,15 +295,19 @@ class CDiskBlockIndex : public CBlockIndex
 public:
     uint256 hashPrev;
 
-    boost::shared_ptr<CAuxPow> auxpow;
+    // Josh TODO: Should this be a full copy,
+    // or should this be merely a pointer?
+    // Not entirely sure of intended usage here.
+    // If it is a pointer, who will own the memory?
+    CSerializedAuxPow auxpow;
 
     CDiskBlockIndex() {
         hashPrev = 0;
-		auxpow.reset();
+	auxpow.SetNull();
     }
 
     //explicit CDiskBlockIndex(CBlockIndex* pindex) : CBlockIndex(*pindex) {
-	explicit CDiskBlockIndex(CBlockIndex* pindex, boost::shared_ptr<CAuxPow> auxpow) : CBlockIndex(*pindex) {
+	explicit CDiskBlockIndex(CBlockIndex* pindex, CSerializedAuxPow auxpow) : CBlockIndex(*pindex) {
         hashPrev = (pprev ? pprev->GetBlockHash() : 0);
 		this->auxpow = auxpow;
     }
@@ -332,9 +336,11 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-        // Josh TODO: Not sure of the difference between this->nVersion and the passed-in nVersion, which is correct to use in this case?
+        
+	// Josh: Same reason as in CSerializedBlockHeader,
+	// use the passed-in nVersion, not the nVersion of the caller!
 	if (this->nVersion & BLOCK_VERSION_AUXPOW) {
-		READWRITE(*auxpow);
+		READWRITE(auxpow);
 	}
       }
 

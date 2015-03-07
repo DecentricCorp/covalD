@@ -477,19 +477,21 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 	int algo = pblock->GetAlgo();
     uint256 hashPoW = pblock->GetHash(algo);
     uint256 hashTarget = uint256().SetCompact(pblock->nBits);
-	CAuxPow *auxpow = pblock->auxpow.get();
+    
+    // Josh: Same caveats as CheckProofOfWork() in main.cpp
+    if (pblock->nVersion & BLOCK_VERSION_AUXPOW) {
+        CAuxPow	liveAuxPow(pblock->auxpow);
 	
-    if (auxpow != NULL) {
-        if (!auxpow->Check(pblock->GetHash(), pblock->GetChainID()))
+        if (!(liveAuxPow.Check(pblock->GetHash(), pblock->GetChainID())))
             return error("AUX POW is not valid");
 
-        if (auxpow->GetParentBlockHash(algo) > hashTarget)
-            return error("AUX POW parent hash %s is not under target %s", auxpow->GetParentBlockHash(algo).GetHex().c_str(), hashTarget.GetHex().c_str());
+        if (liveAuxPow.GetParentBlockHash(algo) > hashTarget)
+            return error("AUX POW parent hash %s is not under target %s", liveAuxPow.GetParentBlockHash(algo).GetHex().c_str(), hashTarget.GetHex().c_str());
         
         // print to log
         LogPrintf("Ribbit Miner: AUX proof-of-work found; our hash: %s ; parent hash: %s ; target: %s\n",
                hashPoW.GetHex().c_str(),
-               auxpow->GetParentBlockHash(algo).GetHex().c_str(),
+               liveAuxPow.GetParentBlockHash(algo).GetHex().c_str(),
                hashTarget.GetHex().c_str());
     }else{
 		
