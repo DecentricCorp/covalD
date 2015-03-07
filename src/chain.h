@@ -332,8 +332,11 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-		ReadWriteAuxPow(s, auxpow, nType, this->nVersion, ser_action);
-    }
+        // Josh TODO: Not sure of the difference between this->nVersion and the passed-in nVersion, which is correct to use in this case?
+	if (this->nVersion & BLOCK_VERSION_AUXPOW) {
+		READWRITE(*auxpow);
+	}
+      }
 
     uint256 GetBlockHash() const
     {
