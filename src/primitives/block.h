@@ -11,18 +11,9 @@
 #include "uint256.h"
 #include "pow.h"
 #include "crypto/scrypt.h"
-#include <boost/shared_ptr.hpp>
 
-class CAuxPow;
+#include "serializedauxpow.h"
 
-//template <typename Stream>
-//void ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action);
-
-//template <typename Stream>
-//void ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionUnserialize ser_action);
-
-//template <typename Stream>
-//int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionGetSerializeSize ser_action);
 
 // primary version
 //static const int BLOCK_VERSION_DEFAULT = (1 << 0);
@@ -57,7 +48,7 @@ public:
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
-	boost::shared_ptr<CAuxPow> auxpow;
+    CSerializedAuxPow auxpow;
 
     CBlockHeader()
     {
@@ -77,28 +68,27 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+	// The auxpow field is optional and does not exist unless indicated by flag bit within block version number
 	if (nVersion & BLOCK_VERSION_AUXPOW) {
-		READWRITE(*auxpow);
+		READWRITE(auxpow);
 	}
     }
 
-	void SetAuxPow(CAuxPow* pow);
-
     void SetNull()
     {
-		nVersion = CBlockHeader::CURRENT_VERSION | (AUXPOW_CHAIN_ID * BLOCK_VERSION_CHAIN_START);
-		hashPrevBlock = 0;
+	nVersion = CBlockHeader::CURRENT_VERSION | (AUXPOW_CHAIN_ID * BLOCK_VERSION_CHAIN_START);
+	hashPrevBlock = 0;
         hashMerkleRoot = 0;
         nTime = 0;
         nBits = 0;
         nNonce = 0;
+	auxpow.SetNull();
     }
 
     int GetChainID() const
     {
         return nVersion / BLOCK_VERSION_CHAIN_START;
     }
-
 
     bool IsNull() const
     {
@@ -114,6 +104,9 @@ public:
         return (int64_t)nTime;
     }
  
+    // Josh TODO: These are in main.cpp, even though they are methods of CBlockHeader,
+    // should they be moved here?
+    void SetAuxPow(CSerializedAuxPow* pow);
     bool CheckProofOfWork(int nHeight) const;
 };
 
@@ -162,7 +155,7 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
-        block.auxpow         = auxpow;
+	block.auxpow         = auxpow;
         return block;
     }
 

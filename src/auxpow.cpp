@@ -138,3 +138,20 @@ void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, unsigne
 }
 
 
+CAuxPow::CAuxPow(const CSerializedAuxPow& serAuxPow)
+	: CMerkleTx()
+{
+	// Josh TODO ###
+}
+
+
+CAuxPow::operator CSerializedAuxPow() const
+{
+	// Josh ### TODO (move to .cpp)
+	// Construct and return something here
+	CSerializedAuxPow	fooTODO;
+	
+	return fooTODO;
+}
+
+
