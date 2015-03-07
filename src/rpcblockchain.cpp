@@ -82,32 +82,33 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
 	if (block.nVersion & BLOCK_VERSION_AUXPOW) {
         // this block includes auxpow
         Object auxpow;
-        auxpow.push_back(Pair("size", (int)::GetSerializeSize(*block.auxpow, SER_NETWORK, PROTOCOL_VERSION)));
+        auxpow.push_back(Pair("size", (int)::GetSerializeSize(block.auxpow, SER_NETWORK, PROTOCOL_VERSION)));
 
         Object coinbasetx;
-        TxToJSON(*block.auxpow, 0, coinbasetx);
+	CAuxPow	liveAuxPow(block.auxpow);
+        TxToJSON(liveAuxPow, 0, coinbasetx);
         auxpow.push_back(Pair("coinbasetx", Value(coinbasetx)));
 
         Array coinbaseMerkle;
-        BOOST_FOREACH(const uint256 &hash, block.auxpow->vMerkleBranch)
+        BOOST_FOREACH(const uint256 &hash, liveAuxPow.vMerkleBranch)
             coinbaseMerkle.push_back(hash.GetHex());
         auxpow.push_back(Pair("coinbaseMerkleBranch", coinbaseMerkle));
-        auxpow.push_back(Pair("coinbaseIndex", block.auxpow->nIndex));
+        auxpow.push_back(Pair("coinbaseIndex", liveAuxPow.nIndex));
 
         Array chainMerkle;
-        BOOST_FOREACH(const uint256 &hash, block.auxpow->vChainMerkleBranch)
+        BOOST_FOREACH(const uint256 &hash, liveAuxPow.vChainMerkleBranch)
             chainMerkle.push_back(hash.GetHex());
         auxpow.push_back(Pair("chainMerkleBranch", chainMerkle));
-        auxpow.push_back(Pair("chainIndex", (boost::uint64_t)block.auxpow->nChainIndex));
+        auxpow.push_back(Pair("chainIndex", (boost::uint64_t)liveAuxPow.nChainIndex));
 
         Object parent_block;
-        parent_block.push_back(Pair("hash", block.auxpow->parentBlockHeader.GetHash().GetHex()));
-        parent_block.push_back(Pair("version", (boost::uint64_t)block.auxpow->parentBlockHeader.nVersion));
-        parent_block.push_back(Pair("previousblockhash", block.auxpow->parentBlockHeader.hashPrevBlock.GetHex()));
-        parent_block.push_back(Pair("merkleroot", block.auxpow->parentBlockHeader.hashMerkleRoot.GetHex()));
-        parent_block.push_back(Pair("time", (boost::int64_t)block.auxpow->parentBlockHeader.nTime));
-        parent_block.push_back(Pair("bits", strprintf("%08x", block.auxpow->parentBlockHeader.nBits)));
-        parent_block.push_back(Pair("nonce", (boost::uint64_t)block.auxpow->parentBlockHeader.nNonce));
+        parent_block.push_back(Pair("hash", liveAuxPow.parentBlockHeader.GetHash().GetHex()));
+        parent_block.push_back(Pair("version", (boost::uint64_t)liveAuxPow.parentBlockHeader.nVersion));
+        parent_block.push_back(Pair("previousblockhash", liveAuxPow.parentBlockHeader.hashPrevBlock.GetHex()));
+        parent_block.push_back(Pair("merkleroot", liveAuxPow.parentBlockHeader.hashMerkleRoot.GetHex()));
+        parent_block.push_back(Pair("time", (boost::int64_t)liveAuxPow.parentBlockHeader.nTime));
+        parent_block.push_back(Pair("bits", strprintf("%08x", liveAuxPow.parentBlockHeader.nBits)));
+        parent_block.push_back(Pair("nonce", (boost::uint64_t)liveAuxPow.parentBlockHeader.nNonce));
         auxpow.push_back(Pair("parent_block", Value(parent_block)));
         result.push_back(Pair("auxpow", Value(auxpow)));
     }	

@@ -1006,7 +1006,7 @@ Value getauxblock(const Array& params, bool fHelp)
             IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
 
             // Sets the version
-            pblock->SetAuxPow(new CAuxPow());
+            pblock->SetAuxPow(new CSerializedAuxPow());
 
             // Save
             mapNewBlock[pblock->GetHash()] = pblock;
@@ -1028,13 +1028,21 @@ Value getauxblock(const Array& params, bool fHelp)
         hash.SetHex(params[0].get_str());
         vector<unsigned char> vchAuxPow = ParseHex(params[1].get_str());
         CDataStream ss(vchAuxPow, SER_GETHASH, PROTOCOL_VERSION);
-        CAuxPow* pow = new CAuxPow();
+        // Josh TODO: Will this work? CAuxPow is no longer serializable directly,
+	// so this *should* fail to compile,
+	// so I will change it to CSerializedAuxPow,
+	// however that will really require that we have a 1:1 mapping between all the fields!
+	// Need to test, is the byte stream we get 100% identical to what miners expected with the old Bitcoin 0.9?
+	CAuxPow* pow = new CAuxPow();
         ss >> *pow;
         if (!mapNewBlock.count(hash))
             return ::error("getauxblock() : block not found");
 
         CBlock* pblock = mapNewBlock[hash];
-        pblock->SetAuxPow(pow);
+	
+	// Josh: Invoke conversion operator in CAuxPow to serialize it
+	CSerializedAuxPow deadAuxPow(*pow);
+        pblock->SetAuxPow(&deadAuxPow);
 
         if (!CheckWork(pblock, *pwalletMain, reservekey))
         {

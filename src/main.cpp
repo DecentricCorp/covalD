@@ -1177,14 +1177,6 @@ bool WriteBlockToDisk(CBlock& block, CDiskBlockPos& pos)
     return true;
 }
 
-void CBlockHeader::SetAuxPow(CAuxPow* pow)
-{
-    if (pow != NULL)
-        nVersion |= BLOCK_VERSION_AUXPOW;
-    else
-        nVersion &= ~BLOCK_VERSION_AUXPOW;
-    auxpow.reset(pow);
-}
 
 bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos)
 {
@@ -1219,6 +1211,7 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex)
     return true;
 }
 
+// Josh TODO: Some code uses this, some code just tests the flag bit within nVersion, which is correct?
 bool IsAuxPowVersion(int nVersion)
 {
     return (nVersion == BLOCK_VERSION_AUXPOW_WITH_AUX || nVersion == BLOCK_VERSION_AUXPOW_WITHOUT_AUX);
@@ -2378,6 +2371,21 @@ int GetAuxPowStartBlock()
         return AUXPOW_START_MAINNET;
 }
 
+// Josh: Although auxpow is no longer a pointer, its existence is still optional.
+// Instead of checking pointer against NULL, the bit in nVersion indicates it.
+void CBlockHeader::SetAuxPow(CSerializedAuxPow* pow)
+{
+	if (pow != NULL) {
+		nVersion |= BLOCK_VERSION_AUXPOW;
+		auxpow = *pow;
+	}
+	else {
+		nVersion &= ~BLOCK_VERSION_AUXPOW;
+		auxpow.SetNull();
+	}
+}
+
+// Josh: auxpow is a CSerializedAuxPow, must launder it via constructor to become a real CAuxPow
 bool CBlockHeader::CheckProofOfWork(int nHeight) const
 {
 	int algo = GetAlgo();
@@ -2390,12 +2398,14 @@ bool CBlockHeader::CheckProofOfWork(int nHeight) const
         if (nHeight != INT_MAX && GetChainID() != AUXPOW_CHAIN_ID)
             return error("CheckProofOfWork() : block (chainID=%d) does not have our chain ID (chainID=%d)", GetChainID(),AUXPOW_CHAIN_ID);
 
-        if (auxpow.get() != NULL)
+        if (nVersion & BLOCK_VERSION_AUXPOW)
         {
-            if (!auxpow->Check(GetHash(), GetChainID()))
+	    CAuxPow	liveAuxPow(auxpow);
+	    
+            if (!(liveAuxPow.Check(GetHash(), GetChainID())))
                 return error("CheckProofOfWork() : AUX POW is not valid");
             // Check proof of work matches claimed amount
-            if (!::CheckProofOfWork(auxpow->GetParentBlockHash(algo), nBits, algo))
+            if (!::CheckProofOfWork(liveAuxPow.GetParentBlockHash(algo), nBits, algo))
                 return error("CheckProofOfWork() : AUX proof of work failed");
         }
         else
@@ -2407,7 +2417,7 @@ bool CBlockHeader::CheckProofOfWork(int nHeight) const
     }
     else
     {
-        if (auxpow.get() != NULL)
+        if (nVersion & BLOCK_VERSION_AUXPOW)
         {
             return error("CheckProofOfWork() : AUX POW is not allowed at this block");
         }
@@ -2418,7 +2428,6 @@ bool CBlockHeader::CheckProofOfWork(int nHeight) const
     }
     return true;
 }
-
 
 
 bool FindBlockPos(CValidationState &state, CDiskBlockPos &pos, unsigned int nAddSize, unsigned int nHeight, uint64_t nTime, bool fKnown = false)

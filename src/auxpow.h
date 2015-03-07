@@ -7,6 +7,9 @@
 #include "main.h"
 #include "wallet.h"
 
+#include "serializedauxpow.h"
+
+
 class CAuxPow : public CMerkleTx
 {
 public:
@@ -18,6 +21,10 @@ public:
     {
     }
 
+    // Josh: Conversions between CAuxPow and CSerializedAuxPow
+    CAuxPow(const CSerializedAuxPow& serAuxPow);
+    operator CSerializedAuxPow() const;
+    
     // Merkle branch with root vchAux
     // root must be present inside the coinbase
     std::vector<uint256> vChainMerkleBranch;
@@ -25,15 +32,8 @@ public:
     unsigned int nChainIndex;
     CBlockHeader parentBlockHeader;
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(*(CMerkleTx*)this);
-        nVersion = this->nVersion;
-        READWRITE(vChainMerkleBranch);
-        READWRITE(nChainIndex);
-    }
+    // Josh: This class is no longer serializable!
+    // Use CSerializedAuxPow instead, for that.
 
     bool Check(uint256 hashAuxBlock, int nChainID);
 
@@ -43,36 +43,8 @@ public:
     }
 };
 
-/*
-template <typename Stream>
-int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionGetSerializeSize ser_action)
-{
-    if (nVersion & BLOCK_VERSION_AUXPOW)
-    {
-        return ::GetSerializeSize(*auxpow, nType, nVersion);
-    }
-    return 0;
-}
-template <typename Stream>
-void ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action)
-{
-    if (nVersion & BLOCK_VERSION_AUXPOW)
-        SerReadWrite(s, *auxpow, nType, nVersion, ser_action);
-}
-
-template <typename Stream>
-void ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionUnserialize ser_action)
-{
-    if (nVersion & BLOCK_VERSION_AUXPOW)
-    {
-        auxpow.reset(new CAuxPow());
-        SerReadWrite(s, *auxpow, nType, nVersion, ser_action);
-    }
-    else
-        auxpow.reset();
-}
-*/
 
 extern void RemoveMergedMiningHeader(std::vector<unsigned char>& vchAux);
 extern CScript MakeCoinbaseWithAux(unsigned int nBits, unsigned int nExtraNonce, std::vector<unsigned char>& vchAux);
+
 #endif
