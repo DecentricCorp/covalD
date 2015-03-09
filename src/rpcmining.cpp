@@ -1000,13 +1000,14 @@ Value getauxblock(const Array& params, bool fHelp)
             pblock->nTime = max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
             pblock->nNonce = 0;
 
-            
             // Update nExtraNonce
             static unsigned int nExtraNonce = 0;
             IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
 
-            // Sets the version
-            pblock->SetAuxPow(new CSerializedAuxPow());
+            CSerializedAuxPow serAuxPow;
+	    
+	    // Sets the flag bit in the version (and fills in a dummy auxpow header)
+            pblock->SetAuxPow(&serAuxPow);
 
             // Save
             mapNewBlock[pblock->GetHash()] = pblock;
@@ -1028,21 +1029,20 @@ Value getauxblock(const Array& params, bool fHelp)
         hash.SetHex(params[0].get_str());
         vector<unsigned char> vchAuxPow = ParseHex(params[1].get_str());
         CDataStream ss(vchAuxPow, SER_GETHASH, PROTOCOL_VERSION);
-        // Josh TODO: Will this work? CAuxPow is no longer serializable directly,
-	// so this *should* fail to compile,
-	// so I will change it to CSerializedAuxPow,
-	// however that will really require that we have a 1:1 mapping between all the fields!
+        
+	// Josh TODO: Will this work?
 	// Need to test, is the byte stream we get 100% identical to what miners expected with the old Bitcoin 0.9?
-	CAuxPow* pow = new CAuxPow();
-        ss >> *pow;
+	// That is, do CAuxPow (from 0.9) and CSerializedAuxPow have a 1:1 mapping between all the fields on the wire?
+	CSerializedAuxPow serAuxPow;
+        ss >> serAuxPow;
+	
         if (!mapNewBlock.count(hash))
             return ::error("getauxblock() : block not found");
 
         CBlock* pblock = mapNewBlock[hash];
 	
-	// Josh: Invoke conversion operator in CAuxPow to serialize it
-	CSerializedAuxPow deadAuxPow(*pow);
-        pblock->SetAuxPow(&deadAuxPow);
+        // Sets the flag bit in the version, and copies the given auxpow header into the block
+	pblock->SetAuxPow(&serAuxPow);
 
         if (!CheckWork(pblock, *pwalletMain, reservekey))
         {

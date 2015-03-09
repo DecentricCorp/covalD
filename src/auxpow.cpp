@@ -141,17 +141,50 @@ void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, unsigne
 CAuxPow::CAuxPow(const CSerializedAuxPow& serAuxPow)
 	: CMerkleTx()
 {
-	// Josh TODO ###
+	// Fill in each field of this CAuxPow from CSerializedAuxPow
+	*this              = serAuxPow.parentCoinbaseTxn;
+	hashBlock          = serAuxPow.parentBlockHeaderHash;
+	vMerkleBranch      = serAuxPow.vCoinbaseBranch;
+	nIndex             = serAuxPow.nCoinbaseSideMask;
+	vChainMerkleBranch = serAuxPow.vBlockchainBranch;
+	nChainIndex        = serAuxPow.nBlockchainSideMask;
+	
+	// Fill in each field of CBlockHeader (except for its own auxpow)
+	parentBlockHeader.nVersion       = serAuxPow.parentBlockHeader.nVersion;
+	parentBlockHeader.hashPrevBlock  = serAuxPow.parentBlockHeader.hashPrevBlock;
+	parentBlockHeader.hashMerkleRoot = serAuxPow.parentBlockHeader.hashMerkleRoot;
+	parentBlockHeader.nTime          = serAuxPow.parentBlockHeader.nTime;
+	parentBlockHeader.nBits          = serAuxPow.parentBlockHeader.nBits;
+	parentBlockHeader.nNonce         = serAuxPow.parentBlockHeader.nNonce;
+	
+	// Sanity check
+	parentBlockHeader.auxpow.SetNull();
 }
 
 
 CAuxPow::operator CSerializedAuxPow() const
 {
-	// Josh ### TODO (move to .cpp)
-	// Construct and return something here
-	CSerializedAuxPow	fooTODO;
+	CSerializedAuxPow	serAuxPow;
 	
-	return fooTODO;
+	// Fill in each field of to-be-returned CSerializedAuxPow from CAuxPow
+	serAuxPow.parentCoinbaseTxn     = *this;
+	serAuxPow.parentBlockHeaderHash = hashBlock;
+	serAuxPow.vCoinbaseBranch       = vMerkleBranch;
+	serAuxPow.nCoinbaseSideMask     = nIndex;
+	serAuxPow.vBlockchainBranch     = vChainMerkleBranch;
+	serAuxPow.nBlockchainSideMask   = nChainIndex;
+	
+	// Copy every field of parent blockchain's block header except auxpow
+	// Can't blindly copy entire object, otherwise, have fun crashing when
+	// the copying of auxpow would invoke this conversion operator again recursively...!
+	serAuxPow.parentBlockHeader.nVersion       = parentBlockHeader.nVersion;
+	serAuxPow.parentBlockHeader.hashPrevBlock  = parentBlockHeader.hashPrevBlock;
+	serAuxPow.parentBlockHeader.hashMerkleRoot = parentBlockHeader.hashMerkleRoot;
+	serAuxPow.parentBlockHeader.nTime          = parentBlockHeader.nTime;
+	serAuxPow.parentBlockHeader.nBits          = parentBlockHeader.nBits;
+	serAuxPow.parentBlockHeader.nNonce         = parentBlockHeader.nNonce;
+	
+	return serAuxPow;
 }
 
 

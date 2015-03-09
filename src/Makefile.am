@@ -73,6 +73,7 @@ BITCOIN_CORE_H = \
   addrman.h \
   alert.h \
   auxpow.h \
+  serializedauxpow.h \
   allocators.h \
   amount.h \
   base58.h bignum.h\
@@ -166,6 +167,7 @@ libbitcoin_server_a_SOURCES = \
   addrman.cpp \
   alert.cpp \
   auxpow.cpp \
+  serializedauxpow.cpp \
   bloom.cpp \
   chain.cpp \
   checkpoints.cpp \
