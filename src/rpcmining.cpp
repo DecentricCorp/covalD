@@ -30,8 +30,11 @@
 using namespace json_spirit;
 using namespace std;
 
-// Josh: I tried to add this to auxpow.h but it crashed the compiler!
+// Josh: This is in auxpow.cpp
 extern void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce, std::vector<unsigned char>& vchAux);
+
+// Josh: This is in miner.cpp
+extern bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
 
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
@@ -842,7 +845,7 @@ Value getworkaux(const Array& params, bool fHelp)
         char pdata[128];
         char phash1[64];
         
-	// Josh TODO: Where is this function?
+	// Josh TODO: ### Where is this function?
 	//FormatHashBuffers(pblock, pmidstate, pdata, phash1);
 
         uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
@@ -866,7 +869,7 @@ Value getworkaux(const Array& params, bool fHelp)
 
         // Byte reverse
         for (int i = 0; i < 128/4; i++) {
-		// Josh TODO: Where is this function?
+		// Josh TODO: ### Where is this function?
 		//((unsigned int*)pdata)[i] = ByteReverse(((unsigned int*)pdata)[i]);
 	}
 	
@@ -920,6 +923,8 @@ Value getworkaux(const Array& params, bool fHelp)
             pow.nChainIndex = nChainIndex;
             pow.parentBlockHeader = *pblock;
             CDataStream ss(SER_GETHASH, PROTOCOL_VERSION);
+	    
+	    // ### Josh: Will this serialize? It shouldn't be able to, anymore....
             ss << pow;
             Object result;
             result.push_back(Pair("auxpow", HexStr(ss.begin(), ss.end())));
@@ -929,7 +934,7 @@ Value getworkaux(const Array& params, bool fHelp)
         {
             if (params[0].get_str() == "submit")
             {
-                return CheckWork(pblock, *pwalletMain, reservekey);
+                return ProcessBlockFound(pblock, *pwalletMain, reservekey);
             }
             else
             {
@@ -1044,7 +1049,7 @@ Value getauxblock(const Array& params, bool fHelp)
         // Sets the flag bit in the version, and copies the given auxpow header into the block
 	pblock->SetAuxPow(&serAuxPow);
 
-        if (!CheckWork(pblock, *pwalletMain, reservekey))
+        if (!(ProcessBlockFound(pblock, *pwalletMain, reservekey)))
         {
             return false;
         }
