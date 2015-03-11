@@ -23,7 +23,7 @@ public:
 
     // Josh: Conversions between CAuxPow and CSerializedAuxPow
     CAuxPow(const CSerializedAuxPow& serAuxPow);
-    operator CSerializedAuxPow() const;
+    CSerializedAuxPow GetSerialized() const;
     
     // Merkle branch with root vchAux
     // root must be present inside the coinbase
