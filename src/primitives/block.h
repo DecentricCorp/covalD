@@ -17,11 +17,13 @@
 
 // primary version
 //static const int BLOCK_VERSION_DEFAULT = (1 << 0);
+// Josh TODO: ### Check to make sure these do not conflict with multi-algo!
 static const int BLOCK_VERSION_AUXPOW = (1 << 8);
 static const int BLOCK_VERSION_CHAIN_START = (1 << 16);
 static const int BLOCK_VERSION_CHAIN_END = (1 << 30);
 
 // Unitus aux chain ID = 0x007D (155)
+// Josh TODO: Change this! ###
 static const int AUXPOW_CHAIN_ID = 0x007D;
 static const int AUXPOW_START_MAINNET = 1; //TODO change me
 static const int AUXPOW_START_TESTNET = 1;

@@ -141,6 +141,9 @@ void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, unsigne
 CAuxPow::CAuxPow(const CSerializedAuxPow& serAuxPow)
 	: CMerkleTx()
 {
+	// Ensure parentBlockHeader does not contain its own auxpow, which would be recursive
+	assert((serAuxPow.parentBlockHeader.nVersion & BLOCK_VERSION_AUXPOW) == 0);
+	
 	// Fill in each field of this CAuxPow from CSerializedAuxPow
 	*this              = serAuxPow.parentCoinbaseTxn;
 	hashBlock          = serAuxPow.parentBlockHeaderHash;
@@ -162,9 +165,12 @@ CAuxPow::CAuxPow(const CSerializedAuxPow& serAuxPow)
 }
 
 
-CAuxPow::operator CSerializedAuxPow() const
+CSerializedAuxPow CAuxPow::GetSerialized() const
 {
 	CSerializedAuxPow	serAuxPow;
+	
+	// Ensure parentBlockHeader does not contain its own auxpow, which would be recursive
+	assert((parentBlockHeader.nVersion & BLOCK_VERSION_AUXPOW) == 0);
 	
 	// Fill in each field of to-be-returned CSerializedAuxPow from CAuxPow
 	serAuxPow.parentCoinbaseTxn     = *this;
@@ -174,9 +180,8 @@ CAuxPow::operator CSerializedAuxPow() const
 	serAuxPow.vBlockchainBranch     = vChainMerkleBranch;
 	serAuxPow.nBlockchainSideMask   = nChainIndex;
 	
-	// Copy every field of parent blockchain's block header except auxpow
-	// Can't blindly copy entire object, otherwise, have fun crashing when
-	// the copying of auxpow would invoke this conversion operator again recursively...!
+	// Copy every field of parent blockchain's block header
+	// Intentionally do not copy parentBlockHeader.auxpow
 	serAuxPow.parentBlockHeader.nVersion       = parentBlockHeader.nVersion;
 	serAuxPow.parentBlockHeader.hashPrevBlock  = parentBlockHeader.hashPrevBlock;
 	serAuxPow.parentBlockHeader.hashMerkleRoot = parentBlockHeader.hashMerkleRoot;
