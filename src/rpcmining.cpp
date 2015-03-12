@@ -36,6 +36,10 @@ extern void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, 
 // Josh: This is in miner.cpp
 extern bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
 
+// Josh: These are in miner.cpp and are cut-and-paste jobs from Bitcoin 0.9, sigh
+extern uint32_t ByteReverse(uint32_t value);
+extern void FormatHashBuffers(CBlock* pblock, char* pmidstate, char* pdata, char* phash1);
+
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
  * or from the last difficulty change if 'lookup' is nonpositive.
@@ -845,8 +849,7 @@ Value getworkaux(const Array& params, bool fHelp)
         char pdata[128];
         char phash1[64];
         
-	// Josh TODO: ### Where is this function?
-	//FormatHashBuffers(pblock, pmidstate, pdata, phash1);
+	FormatHashBuffers(pblock, pmidstate, pdata, phash1);
 
         uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
 
@@ -869,8 +872,7 @@ Value getworkaux(const Array& params, bool fHelp)
 
         // Byte reverse
         for (int i = 0; i < 128/4; i++) {
-		// Josh TODO: ### Where is this function?
-		//((unsigned int*)pdata)[i] = ByteReverse(((unsigned int*)pdata)[i]);
+		((unsigned int*)pdata)[i] = ByteReverse(((unsigned int*)pdata)[i]);
 	}
 	
         // Get saved block
@@ -924,8 +926,8 @@ Value getworkaux(const Array& params, bool fHelp)
             pow.parentBlockHeader = *pblock;
             CDataStream ss(SER_GETHASH, PROTOCOL_VERSION);
 	    
-	    // ### Josh: Will this serialize? It shouldn't be able to, anymore....
-            ss << pow;
+	    // Josh: Serialize CAuxPow correctly, by laundering it through CSerializedAuxPow
+            ss << pow.GetSerialized();
             Object result;
             result.push_back(Pair("auxpow", HexStr(ss.begin(), ss.end())));
             return result;
