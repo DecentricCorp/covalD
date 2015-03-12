@@ -331,7 +331,7 @@
        <item row="15" column="0">
         <widget class="QPushButton" name="openDebugLogfileButton">
          <property name="toolTip">
-          <string>Open the Bitcoin debug log file from the current data directory. This can take a few seconds for large log files.</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open the RibbitRewards debug log file from the current data directory. This can take a few seconds for large log files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>&amp;Open</string>
@@ -413,7 +413,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../bitcoin.qrc">
+            <iconset>
              <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
            </property>
            <property name="shortcut">
@@ -1099,8 +1099,6 @@
    </slots>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../bitcoin.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

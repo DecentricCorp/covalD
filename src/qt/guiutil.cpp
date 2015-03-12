@@ -103,7 +103,7 @@ void setupAddressWidget(QValidatedLineEdit *widget, QWidget *parent)
 #if QT_VERSION >= 0x040700
     // We don't want translators to use own addresses in translations
     // and this is the only place, where this address is supplied.
-    widget->setPlaceholderText(QObject::tr("Enter a Bitcoin address (e.g. %1)").arg("1NS17iag9jJgTHD1VXjvLCEnZuQ3rJDE9L"));
+    widget->setPlaceholderText(QObject::tr("Enter a RibbitRewards address (e.g. %1)").arg("rrS17iag9jJgTHD1VXjvLCEnZuQ3rJDE9L"));
 #endif
     widget->setValidator(new BitcoinAddressEntryValidator(parent));
     widget->setCheckValidator(new BitcoinAddressCheckValidator(parent));
@@ -161,7 +161,7 @@ bool parseBitcoinURI(const QUrl &uri, SendCoinsRecipient *out)
         {
             if(!i->second.isEmpty())
             {
-                if(!BitcoinUnits::parse(BitcoinUnits::BTC, i->second, &rv.amount))
+                if(!BitcoinUnits::parse(BitcoinUnits::RBR, i->second, &rv.amount))
                 {
                     return false;
                 }
@@ -200,7 +200,7 @@ QString formatBitcoinURI(const SendCoinsRecipient &info)
 
     if (info.amount)
     {
-        ret += QString("?amount=%1").arg(BitcoinUnits::format(BitcoinUnits::BTC, info.amount, false, BitcoinUnits::separatorNever));
+        ret += QString("?amount=%1").arg(BitcoinUnits::format(BitcoinUnits::RBR, info.amount, false, BitcoinUnits::separatorNever));
         paramCount++;
     }
 
@@ -671,7 +671,7 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         // Write a bitcoin.desktop file to the autostart directory:
         optionFile << "[Desktop Entry]\n";
         optionFile << "Type=Application\n";
-        optionFile << "Name=Bitcoin\n";
+        optionFile << "Name=RibbitRewards\n";
         optionFile << "Exec=" << pszExePath << " -min\n";
         optionFile << "Terminal=false\n";
         optionFile << "Hidden=false\n";
