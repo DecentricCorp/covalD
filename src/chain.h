@@ -295,10 +295,8 @@ class CDiskBlockIndex : public CBlockIndex
 public:
     uint256 hashPrev;
 
-    // Josh TODO: Should this be a full copy,
-    // or should this be merely a pointer?
-    // Not entirely sure of intended usage here.
-    // If it is a pointer, who will own the memory?
+    // Josh TESTME: Should this be a pointer, or the full object?
+    // If it is a pointer, who owns the memory?
     CSerializedAuxPow auxpow;
 
     CDiskBlockIndex() {
@@ -338,7 +336,7 @@ public:
         READWRITE(nNonce);
         
 	// Josh: Same reason as in CSerializedBlockHeader,
-	// use the passed-in nVersion, not the nVersion of the caller!
+	// use this object's already-set nVersion, not the nVersion of the caller!
 	if (this->nVersion & BLOCK_VERSION_AUXPOW) {
 		READWRITE(auxpow);
 	}

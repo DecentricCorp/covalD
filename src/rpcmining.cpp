@@ -1037,8 +1037,8 @@ Value getauxblock(const Array& params, bool fHelp)
         vector<unsigned char> vchAuxPow = ParseHex(params[1].get_str());
         CDataStream ss(vchAuxPow, SER_GETHASH, PROTOCOL_VERSION);
         
-	// Josh TODO: Will this work?
-	// Need to test, is the byte stream we get 100% identical to what miners expected with the old Bitcoin 0.9?
+	// Josh TESTME: Need to test this!
+	// Is the byte stream we get 100% identical to what miners expected with the old Bitcoin 0.9?
 	// That is, do CAuxPow (from 0.9) and CSerializedAuxPow have a 1:1 mapping between all the fields on the wire?
 	CSerializedAuxPow serAuxPow;
         ss >> serAuxPow;

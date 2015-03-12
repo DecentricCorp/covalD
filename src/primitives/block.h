@@ -17,15 +17,19 @@
 
 // primary version
 //static const int BLOCK_VERSION_DEFAULT = (1 << 0);
-// Josh TODO: ### Check to make sure these do not conflict with multi-algo!
+// Josh: These do not conflict with multi-algo, because algorithm selection (BLOCK_VERSION_ALGO) uses bits (7 << 9), see pow.h
 static const int BLOCK_VERSION_AUXPOW = (1 << 8);
 static const int BLOCK_VERSION_CHAIN_START = (1 << 16);
 static const int BLOCK_VERSION_CHAIN_END = (1 << 30);
 
 // Unitus aux chain ID = 0x007D (155)
-// Josh TODO: Change this! ###
-static const int AUXPOW_CHAIN_ID = 0x007D;
-static const int AUXPOW_START_MAINNET = 1; //TODO change me
+// Josh: Arbitrary choosing 0x0082 ('R') for Ribbitcoin
+// Josh TESTME: Will this work with the blockchain we have so far?
+// Might need to accept both, at least until a certain block height is reached (i.e. all miners updated)!
+static const int AUXPOW_CHAIN_ID = 0x0082;
+
+// Josh FUTURE: Once AuxPow is launched in mainstream Ribbitcoin, set this, to prevent AuxPow from being honored in early blocks, to protect our early blockchain (weak POW) from getting clobbered (see Coiledcoin)
+static const int AUXPOW_START_MAINNET = 1;
 static const int AUXPOW_START_TESTNET = 1;
 
 
@@ -106,8 +110,7 @@ public:
         return (int64_t)nTime;
     }
  
-    // Josh TODO: These are in main.cpp, even though they are methods of CBlockHeader,
-    // should they be moved here?
+    // Josh FUTURE: These are in main.cpp, even though they are methods of CBlockHeader, should they be moved here?
     void SetAuxPow(CSerializedAuxPow* pow);
     bool CheckProofOfWork(int nHeight) const;
 };

@@ -1211,11 +1211,13 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex)
     return true;
 }
 
-// Josh TODO: Some code uses this, some code just tests the flag bit within nVersion, which is correct?
+// Josh: This function appears totally unused, disabling it!
+#if 0
 bool IsAuxPowVersion(int nVersion)
 {
     return (nVersion == BLOCK_VERSION_AUXPOW_WITH_AUX || nVersion == BLOCK_VERSION_AUXPOW_WITHOUT_AUX);
 }
+#endif
 
 CAmount GetBlockValue(int nHeight, const CAmount& nFees)
 {
