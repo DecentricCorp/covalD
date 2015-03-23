@@ -178,16 +178,16 @@ bool CheckBlockProofOfWork(const CBlockHeader *pblock, int algo)
 
     if (pblock->auxpow.get() != NULL)
     {
-        if (!pblock->auxpow->Check(pblock->GetHash(), algo))
+        if (!pblock->auxpow->Check(pblock->GetHash()))
             return error("CheckBlockProofOfWork() : AUX POW is not valid");
         // Check proof of work matches claimed amount
-        if (!CheckProofOfWork(pblock->auxpow->GetParentBlockHash(), pblock->nBits, pblock->GetAlgo()))
+        if (!CheckProofOfWork(pblock->auxpow->GetParentBlockHash(algo), pblock->nBits, pblock->GetAlgo()))
             return error("CheckBlockProofOfWork() : AUX proof of work failed");
     } 
     else
     {
         // Check proof of work matches claimed amount
-        if (!CheckProofOfWork(pblock->GetPoWHash(), pblock->nBits, algo))
+        if (!CheckProofOfWork(pblock->GetHash(), pblock->nBits, algo))
             return error("CheckBlockProofOfWork() : proof of work failed");
     }
     return true;
