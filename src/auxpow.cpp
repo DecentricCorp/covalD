@@ -1,15 +1,22 @@
 // Copyright (c) 2011 Vince Durham
 // Distributed under the MIT/X11 software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
-#include "script/script.h"
 #include "auxpow.h"
-#include "util.h"
 #include "init.h"
+#include "primitives/block.h"
+#include "chainparams.h"
+#include "util.h"
+#include "base58.h"
 
 using namespace std;
 using namespace boost;
 
 unsigned char pchMergedMiningHeader[] = { 0xfa, 0xbe, 'm', 'm' } ;
+
+int GetAuxPowStartBlock()
+{
+    return Params().AllowMinDifficultyBlocks() ? AUXPOW_START_TESTNET : AUXPOW_START_MAINNET;
+}
 
 void RemoveMergedMiningHeader(vector<unsigned char>& vchAux)
 {
@@ -105,36 +112,27 @@ bool CAuxPow::Check(uint256 hashAuxBlock, int nChainID)
     return true;
 }
 
-CScript MakeCoinbaseWithAux(unsigned int nHeight, unsigned int nExtraNonce, vector<unsigned char>& vchAux)
+void CBlockHeader::SetAuxPow(CAuxPow* pow)
 {
-    vector<unsigned char> vchAuxWithHeader(UBEGIN(pchMergedMiningHeader), UEND(pchMergedMiningHeader));
-    vchAuxWithHeader.insert(vchAuxWithHeader.end(), vchAux.begin(), vchAux.end());
-
-    CScript script = (CScript() << nHeight << CScriptNum(nExtraNonce)) + COINBASE_FLAGS;
-    
-    // Push OP_2 just in case we want versioning later
-    script = script << OP_2 << vchAuxWithHeader;
-    
-    return script;
+    if (pow != NULL)
+        nVersion |= BLOCK_VERSION_AUXPOW;
+    else
+        nVersion &= ~BLOCK_VERSION_AUXPOW;
+    auxpow.reset(pow);
 }
 
-
-void IncrementExtraNonceWithAux(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce, vector<unsigned char>& vchAux)
+CKeyID GetAuxpowMiningKey()
 {
-    // Update nExtraNonce
-    static uint256 hashPrevBlock;
-    if (hashPrevBlock != pblock->hashPrevBlock)
-    {
-        nExtraNonce = 0;
-        hashPrevBlock = pblock->hashPrevBlock;
+    CKeyID result;
+    CBitcoinAddress auxminingaddr(GetArg("-auxminingaddr", ""));
+    if (!auxminingaddr.GetKeyID(result)) {
+        CReserveKey reservekey(pwalletMain);
+        CPubKey pubkey;
+        reservekey.GetReservedKey(pubkey);
+        result = pubkey.GetID();
     }
-    ++nExtraNonce;
-
-    unsigned int nHeight = pindexPrev->nHeight+1; // Height first in coinbase required for block.version=2
-    CMutableTransaction oldtx(pblock->vtx[0]);
-    oldtx.vin[0].scriptSig = MakeCoinbaseWithAux(nHeight, nExtraNonce, vchAux);
-    pblock->vtx[0] = CTransaction(oldtx);
-    pblock->hashMerkleRoot = pblock->BuildMerkleTree();
+    return result;
 }
+
 
 

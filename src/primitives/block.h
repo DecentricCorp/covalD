@@ -6,20 +6,18 @@
 #ifndef BITCOIN_PRIMITIVES_BLOCK_H
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
+#include <boost/shared_ptr.hpp>
 #include "primitives/transaction.h"
 #include "serialize.h"
 #include "uint256.h"
 #include "pow.h"
 #include "crypto/scrypt.h"
-#include <boost/shared_ptr.hpp>
+#include "utilstrencodings.h"
+
 
 class CAuxPow;
-
-template <typename Stream>
-void ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionSerialize ser_action);
-
-template <typename Stream>
-void ReadWriteAuxPow(Stream& s, boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionUnserialize ser_action);
+template<typename Stream> void SerReadWrite(Stream& s, boost::shared_ptr<CAuxPow>& pobj, int nType, int nVersion, CSerActionSerialize ser_action);
+template<typename Stream> void SerReadWrite(Stream& s, boost::shared_ptr<CAuxPow>& pobj, int nType, int nVersion, CSerActionUnserialize ser_action);
 
 //template <typename Stream>
 //int ReadWriteAuxPow(Stream& s, const boost::shared_ptr<CAuxPow>& auxpow, int nType, int nVersion, CSerActionGetSerializeSize ser_action);
@@ -77,7 +75,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-        ReadWriteAuxPow(s, auxpow, nType, nVersion, ser_action);
+        READWRITE(auxpow);
     }
 
 	void SetAuxPow(CAuxPow* pow);

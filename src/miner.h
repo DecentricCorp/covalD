@@ -29,6 +29,7 @@ CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey, int algo);
 void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce);
 /** Check mined block */
 bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
+bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
 void UpdateTime(CBlockHeader* block, const CBlockIndex* pindexPrev);
 
 extern double dHashesPerSec[NUM_ALGOS];

@@ -171,6 +171,28 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, int algo)
     return true;
 }
 
+bool CheckBlockProofOfWork(const CBlockHeader *pblock, int algo)
+{
+    if (!Params().AllowMinDifficultyBlocks() && (pblock->nVersion & BLOCK_VERSION_AUXPOW && pblock->GetChainID() != AUXPOW_CHAIN_ID))
+        return error("CheckBlockProofOfWork() : block does not have our chain ID");
+
+    if (pblock->auxpow.get() != NULL)
+    {
+        if (!pblock->auxpow->Check(pblock->GetHash(), algo))
+            return error("CheckBlockProofOfWork() : AUX POW is not valid");
+        // Check proof of work matches claimed amount
+        if (!CheckProofOfWork(pblock->auxpow->GetParentBlockHash(), pblock->nBits, pblock->GetAlgo()))
+            return error("CheckBlockProofOfWork() : AUX proof of work failed");
+    } 
+    else
+    {
+        // Check proof of work matches claimed amount
+        if (!CheckProofOfWork(pblock->GetPoWHash(), pblock->nBits, algo))
+            return error("CheckBlockProofOfWork() : proof of work failed");
+    }
+    return true;
+}
+
 uint256 GetBlockProof(const CBlockIndex& block)
 {
     uint256 bnTarget;

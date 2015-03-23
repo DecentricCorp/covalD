@@ -141,6 +141,7 @@ namespace {
 
     /** Dirty block index entries. */
     set<CBlockIndex*> setDirtyBlockIndex;
+	map<uint256, boost::shared_ptr<CAuxPow> > mapDirtyAuxPow;
 
     /** Dirty block file entries. */
     set<int> setDirtyFileInfo;
@@ -1872,12 +1873,16 @@ bool static FlushStateToDisk(CValidationState &state, FlushStateMode mode) {
         if (fileschanged && !pblocktree->WriteLastBlockFile(nLastBlockFile)) {
             return state.Abort("Failed to write to block index");
         }
-        for (set<CBlockIndex*>::iterator it = setDirtyBlockIndex.begin(); it != setDirtyBlockIndex.end(); ) {
-             if (!pblocktree->WriteBlockIndex(CDiskBlockIndex(*it, block.auxpow))) {
-                 return state.Abort("Failed to write to block index");
-             }
-             setDirtyBlockIndex.erase(it++);
-        }
+         for (set<CBlockIndex*>::iterator it = setDirtyBlockIndex.begin(); it != setDirtyBlockIndex.end(); ) {
+                vBlocks.push_back(*it);
+                setDirtyBlockIndex.erase(it++);
+            }
+		if (!pblocktree->WriteBatchSync(vFiles, nLastBlockFile, vBlocks, mapDirtyAuxPow)) {
+                return state.Abort("Files to write to block index database");
+            }
+            for (std::vector<const CBlockIndex*>::const_iterator it = vBlocks.begin(); it != vBlocks.end(); it++) {
+                mapDirtyAuxPow.erase((*it)->GetBlockHash());
+            }
         pblocktree->Sync();
         // Finally flush the chainstate (which may refer to block index entries).
         if (!pcoinsTip->Flush())
@@ -1919,7 +1924,8 @@ void static UpdateTip(CBlockIndex *pindexNew) {
         const CBlockIndex* pindex = chainActive.Tip();
         for (int i = 0; i < 100 && pindex != NULL; i++)
         {
-            if ((pindex->nVersion & 0xff) > CBlock::CURRENT_VERSION)
+            if (pindex->nVersion > CBlock::CURRENT_VERSION &&
+                (pindex->nVersion & ~BLOCK_VERSION_AUXPOW) != (CBlockHeader::CURRENT_VERSION | (AUXPOW_CHAIN_ID * BLOCK_VERSION_CHAIN_START)))
                 ++nUpgraded;
             pindex = pindex->pprev;
         }
@@ -2318,6 +2324,7 @@ CBlockIndex* AddToBlockIndex(const CBlockHeader& block)
         pindexBestHeader = pindexNew;
 
     setDirtyBlockIndex.insert(pindexNew);
+	mapDirtyAuxPow.insert(std::make_pair(block.GetHash(), block.auxpow));
 
     return pindexNew;
 }
@@ -2582,6 +2589,11 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     assert(pindexPrev);
 
     int nHeight = pindexPrev->nHeight+1;
+
+	 // Check if auxpow is allowed at this height if block has it
+    if (block.auxpow.get() != NULL && nHeight < GetAuxPowStartBlock())
+        return state.DoS(100, error("%s : premature auxpow block", __func__),
+                         REJECT_INVALID, "time-too-new");
 
     // Check proof of work
     if ((!Params().SkipProofOfWorkCheck()) && 
@@ -3891,7 +3903,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         LogPrint("net", "getheaders %d to %s from peer=%d\n", (pindex ? pindex->nHeight : -1), hashStop.ToString(), pfrom->id);
         for (; pindex; pindex = chainActive.Next(pindex))
         {
-            vHeaders.push_back(pindex->GetBlockHeader());
+            vHeaders.push_back(pindex->GetBlockHeader(mapDirtyAuxPow));
             if (--nLimit <= 0 || pindex->GetBlockHash() == hashStop)
                 break;
         }

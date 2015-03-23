@@ -178,7 +178,7 @@ Value setgenerate(const Array& params, bool fHelp)
                 LOCK(cs_main);
                 IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
             }
-            while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits, miningAlgo)) {
+            while (!CheckBlockProofOfWork(pblock, miningAlgo)) {
                 // Yes, there is a chance every nonce could fail to satisfy the -regtest
                 // target -- 1 in 2^(2^32). That ain't gonna happen.
                 ++pblock->nNonce;
@@ -938,19 +938,13 @@ Value getauxblock(const Array& params, bool fHelp)
             "the aux proof of work and returns true if it was successful.");
 
     if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Unitus is not connected!");
+        throw JSONRPCError(-9, "Viacoin is not connected!");
 
     if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Unitus is downloading blocks...");
-    
-    // We use height plus one because we're testing the next block
-    if ((chainActive.Tip()->nHeight+1) < GetAuxPowStartBlock()) {
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "getauxblock method is not available until switch-over block.");
-    }
+        throw JSONRPCError(-10, "Viacoin is downloading blocks...");
 
     static map<uint256, CBlock*> mapNewBlock;
     static vector<CBlockTemplate*> vNewBlockTemplate;
-    static CReserveKey reservekey(pwalletMain);
 
     if (params.size() == 0)
     {
@@ -960,8 +954,10 @@ Value getauxblock(const Array& params, bool fHelp)
         static uint64_t nStart;
         static CBlock* pblock;
         static CBlockTemplate* pblocktemplate;
+        if (chainActive.Tip()->nHeight < GetAuxPowStartBlock() - 1)
+            throw JSONRPCError(-1, "Merged mining not enabled at current block height yet");
         if (pindexPrev != chainActive.Tip() ||
-            (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 60))
+            (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 20))
         {
             if (pindexPrev != chainActive.Tip())
             {
@@ -976,7 +972,9 @@ Value getauxblock(const Array& params, bool fHelp)
             nStart = GetTime();
 
             // Create new block with nonce = 0 and extraNonce = 1
-            pblocktemplate = CreateNewBlockWithKey(*pMiningKey, miningAlgo);
+            static const CKeyID keyID = GetAuxpowMiningKey();
+            CScript scriptCoinbase = GetScriptForDestination(keyID);
+            pblocktemplate = CreateNewBlock(scriptCoinbase);
             if (!pblocktemplate)
                 throw JSONRPCError(-7, "Out of memory");
 
@@ -985,7 +983,6 @@ Value getauxblock(const Array& params, bool fHelp)
             pblock->nTime = max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
             pblock->nNonce = 0;
 
-            
             // Update nExtraNonce
             static unsigned int nExtraNonce = 0;
             IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
@@ -999,10 +996,10 @@ Value getauxblock(const Array& params, bool fHelp)
             vNewBlockTemplate.push_back(pblocktemplate);
         }
 
-        uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
+        uint256 hashTarget = uint256().SetCompact(pblock->nBits);
 
         Object result;
-        result.push_back(Pair("target",   HexStr(BEGIN(hashTarget), END(hashTarget))));
+        result.push_back(Pair("target", HexStr(BEGIN(hashTarget), END(hashTarget))));
         result.push_back(Pair("hash", pblock->GetHash().GetHex()));
         result.push_back(Pair("chainid", pblock->GetChainID()));
         return result;
@@ -1016,19 +1013,40 @@ Value getauxblock(const Array& params, bool fHelp)
         CAuxPow* pow = new CAuxPow();
         ss >> *pow;
         if (!mapNewBlock.count(hash))
-            return ::error("getauxblock() : block not found");
+            return "stale-work";
 
         CBlock* pblock = mapNewBlock[hash];
         pblock->SetAuxPow(pow);
 
-        if (!CheckWork(pblock, *pwalletMain, reservekey))
-        {
-            return false;
+        BlockMap::iterator mi = mapBlockIndex.find(hash);
+        if (mi != mapBlockIndex.end()) {
+            CBlockIndex *pindex = mi->second;
+            if (pindex->IsValid(BLOCK_VALID_SCRIPTS))
+                return "duplicate";
+            if (pindex->nStatus & BLOCK_FAILED_MASK)
+                return "duplicate-invalid";
         }
-        else
+
+        CValidationState state;
+        submitblock_StateCatcher sc(pblock->GetHash());
+        RegisterValidationInterface(&sc);
+
+        bool fAccepted = ProcessNewBlock(state, NULL, pblock);
+        UnregisterValidationInterface(&sc);
+        if (mi != mapBlockIndex.end())
         {
-            return true;
+            if (fAccepted && !sc.found)
+                return "duplicate-inconclusive";
+            return "duplicate";
         }
+        if (fAccepted)
+        {
+            if (!sc.found)
+                return "inconclusive";
+            state = sc.state;
+        }
+        Value result = BIP22ValidationResult(state);
+        return result.is_null() ? true : result;
     }
 }
 #endif
