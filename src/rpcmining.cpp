@@ -11,6 +11,7 @@
 #include "main.h"
 #include "miner.h"
 #include "pow.h"
+#include "timedata.h"
 #include "rpcserver.h"
 #include "util.h"
 #ifdef ENABLE_WALLET
@@ -178,7 +179,7 @@ Value setgenerate(const Array& params, bool fHelp)
                 LOCK(cs_main);
                 IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
             }
-            while (!CheckBlockProofOfWork(pblock, miningAlgo)) {
+            while (!CheckBlockProofOfWork(pblock)) {
                 // Yes, there is a chance every nonce could fail to satisfy the -regtest
                 // target -- 1 in 2^(2^32). That ain't gonna happen.
                 ++pblock->nNonce;
@@ -747,6 +748,7 @@ Value estimatepriority(const Array& params, bool fHelp)
     return mempool.estimatePriority(nBlocks);
 }
 #ifdef ENABLE_WALLET
+/*
 Value getworkaux(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1)
@@ -926,7 +928,7 @@ Value getworkaux(const Array& params, bool fHelp)
         }
     }
 }
-
+*/
 Value getauxblock(const Array& params, bool fHelp)
 {
     if (fHelp || (params.size() != 0 && params.size() != 2))
@@ -974,7 +976,7 @@ Value getauxblock(const Array& params, bool fHelp)
             // Create new block with nonce = 0 and extraNonce = 1
             static const CKeyID keyID = GetAuxpowMiningKey();
             CScript scriptCoinbase = GetScriptForDestination(keyID);
-            pblocktemplate = CreateNewBlock(scriptCoinbase);
+            pblocktemplate = CreateNewBlock(scriptCoinbase, miningAlgo);
             if (!pblocktemplate)
                 throw JSONRPCError(-7, "Out of memory");
 

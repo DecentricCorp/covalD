@@ -8,12 +8,12 @@
 #include "pow.h"
 #include "chain.h"
 
-#include "chain.h"
 #include "chainparams.h"
 #include "checkpoints.h"
 #include "primitives/block.h"
 #include "uint256.h"
 #include "util.h"
+#include "auxpow.h"
 
 unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	
@@ -178,7 +178,7 @@ bool CheckBlockProofOfWork(const CBlockHeader *pblock, int algo)
 
     if (pblock->auxpow.get() != NULL)
     {
-        if (!pblock->auxpow->Check(pblock->GetHash()))
+        if (!pblock->auxpow->Check(pblock->GetHash(), pblock->GetChainID()))
             return error("CheckBlockProofOfWork() : AUX POW is not valid");
         // Check proof of work matches claimed amount
         if (!CheckProofOfWork(pblock->auxpow->GetParentBlockHash(algo), pblock->nBits, pblock->GetAlgo()))

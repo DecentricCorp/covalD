@@ -86,7 +86,7 @@ std::string CDiskBlockIndex::ToString() const
     str += strprintf("\n                hashBlock=%s, hashPrev=%s, hashParentBlock=%s)",
         GetBlockHash().ToString(),
         hashPrev.ToString(),
-        (auxpow.get() != NULL) ? auxpow->GetParentBlockHash().ToString() : "-");
+        (auxpow.get() != NULL) ? auxpow->GetParentBlockHash(GetAlgo()).ToString() : "-");
     return str;
 }
 
