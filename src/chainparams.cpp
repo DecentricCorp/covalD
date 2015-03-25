@@ -151,8 +151,12 @@ public:
         assert(hashGenesisBlock == uint256("0x0000035cc3899836f94b588d61b0af526e7977e7fd18cae631eacf02bfdfcf0e"));
         assert(genesis.hashMerkleRoot == uint256("0x986b677d7d6f568006a8a897efb712eefb8219efa42038ca36c479ebe93fd573"));
 
-        vSeeds.push_back(CDNSSeedData("ribbitchain.info", "ribbitchain.info"));
-        vSeeds.push_back(CDNSSeedData("Thomas Kerin", "ribbitcoin.bitwasp.co"));
+        vFixedSeeds.clear();
+        vSeeds.clear();
+        
+        // Josh FUTURE: Use real hostnames here
+        // IP addresses should already be provided by chainparamsseeds.h
+        vSeeds.push_back(CDNSSeedData("162.243.230.181", "162.243.230.181"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
@@ -211,10 +215,11 @@ public:
         hashGenesisBlock = genesis.GetHash();
         assert(hashGenesisBlock == uint256("0x0000035cc3899836f94b588d61b0af526e7977e7fd18cae631eacf02bfdfcf0e"));
 
-
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("ribbitcoin.org", "ribbitcoin.org"));
+        
+        // Josh FUTURE: Keep this in sync with mainnet seeds above
+        vSeeds.push_back(CDNSSeedData("162.243.230.181", "162.243.230.181"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(65); // Starts with T
         base58Prefixes[SCRIPT_ADDRESS] = list_of(127); // Starts with t
