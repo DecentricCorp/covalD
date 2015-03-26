@@ -1177,7 +1177,7 @@ bool WriteBlockToDisk(CBlock& block, CDiskBlockPos& pos)
 
     return true;
 }
-
+/*
 void CBlockHeader::SetAuxPow(CAuxPow* pow)
 {
     if (pow != NULL)
@@ -1186,7 +1186,7 @@ void CBlockHeader::SetAuxPow(CAuxPow* pow)
         nVersion &= ~BLOCK_VERSION_AUXPOW;
     auxpow.reset(pow);
 }
-
+*/
 bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos)
 {
     block.SetNull();
