@@ -23,7 +23,8 @@ bool CAuxPow::Check(uint256 hashAuxBlock, int nChainID)
     if (nIndex != 0)
         return error("AuxPow is not a generate");
 
-    if (!Params().TestnetToBeDeprecatedFieldRPC() && parentBlockHeader.GetChainID() == nChainID)
+    // Josh: Overlapping Chain ID should not happen, not even on testnet
+    if (/* !Params().TestnetToBeDeprecatedFieldRPC() && */ parentBlockHeader.GetChainID() == nChainID)
         return error("Aux POW parent has our chain ID");
 
     if (vChainMerkleBranch.size() > 30)
