@@ -69,7 +69,8 @@ static const Checkpoints::CCheckpointData data = {
 static Checkpoints::MapCheckpoints mapCheckpointsTestnet =
         boost::assign::map_list_of
         (   0, uint256("0x0000e80f6ba2da2d801a3ce187388d2200c86f85e07178dcea25772f872576f1"))
-        (   1, uint256("0x0000f09aa1598d2d5a2ea7eab61153a8e24641da3b8a4f0404f0bebd57f7bc10")) // Airdrop
+        // Josh: The airdrop does not exist on testnet
+	/* (   1, uint256("0x0000f09aa1598d2d5a2ea7eab61153a8e24641da3b8a4f0404f0bebd57f7bc10")) // Airdrop */
         ;
 static const Checkpoints::CCheckpointData dataTestnet = {
         &mapCheckpointsTestnet,
