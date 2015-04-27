@@ -29,10 +29,10 @@ enum {
 enum // FIXME merge this with auxpow fields
 {
     // primary version
-    BLOCK_VERSION_DEFAULT        = 2,
+    BLOCK_VERSION_DEFAULT        = 2,         // default = sha256d has the algo bits below zero
 
     // algo
-    BLOCK_VERSION_ALGO           = (7 << 9),
+    BLOCK_VERSION_ALGO           = (7 << 9),  // 3 bits for algorithm = 8 possible hash functions
     BLOCK_VERSION_SCRYPT         = (1 << 9),
 //    BLOCK_VERSION_GROESTL        = (2 << 9),
 //    BLOCK_VERSION_SKEIN          = (3 << 9),

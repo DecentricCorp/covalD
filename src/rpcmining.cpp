@@ -454,7 +454,10 @@ Value getblocktemplate(const Array& params, bool fHelp)
 
         const Value& algorithmval = find_value(oparam, "algorithm");
         if (algorithmval.type() == int_type)
+        {
             algo = algorithmval.get_int();
+            if (algo >= NUM_ALGOS) throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid algorithm");
+        }
     }
 
     if (strMode != "template")
@@ -556,6 +559,10 @@ Value getblocktemplate(const Array& params, bool fHelp)
     // Update nTime
     UpdateTime(pblock, pindexPrev);
     pblock->nNonce = 0;
+
+    // Update algorithm in version field
+    pblock->nVersion &= ~BLOCK_VERSION_ALGO;  // Set version bits to zero for SHA256D
+    if(algo == ALGO_SCRYPT) pblock->nVersion |= BLOCK_VERSION_SCRYPT;
 
     static const Array aCaps = boost::assign::list_of("proposal");
 
