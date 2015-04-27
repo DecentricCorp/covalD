@@ -66,10 +66,12 @@ public:
 	template <typename Stream, typename Operation>
 	inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
 	{
-		// We want to serialize the nVersion stored within this object,
-		// not the nVersion of the caller,
-		// since this block header might be from another blockchain (not ours)!
+		// Follow existing usage of Bitcoin code elsewhere,
+		// trying to keep nVersion in sync,
+		// being both a parameter of this SerializationOp() function
+		// and a member variable of this class!
 		READWRITE(this->nVersion);
+		nVersion = this->nVersion;
 		READWRITE(hashPrevBlock);
 		READWRITE(hashMerkleRoot);
 		READWRITE(nTime);
