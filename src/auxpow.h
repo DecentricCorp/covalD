@@ -32,8 +32,13 @@ public:
     unsigned int nChainIndex;
     CBlockHeader parentBlockHeader;
 
-    // Josh: This class is no longer serializable!
-    // Use CSerializedAuxPow instead, for that.
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+    {
+        GetSerialized().SerializationOp(s, ser_action, nType, nVersion);
+    }
 
     bool Check(uint256 hashAuxBlock, int nChainID);
 
