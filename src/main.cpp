@@ -2363,16 +2363,6 @@ bool ReceivedBlockTransactions(const CBlock &block, CValidationState& state, CBl
     return true;
 }
 
-// to enable merged mining:
-// - set a block from which it will be enabled
-// - set a unique chain ID
-//   each merged minable scrypt_1024_1_1_256 coin should have a different one
-//   (if two have the same ID, they can't be merge mined together)
-int GetAuxPowStartBlock()
-{
-        return AUXPOW_START_MAINNET;
-}
-
 // Josh: Although auxpow is no longer a pointer, its existence is still optional.
 // Instead of checking pointer against NULL, the bit in nVersion indicates it.
 void CBlockHeader::SetAuxPow(CSerializedAuxPow* pow)
@@ -2390,41 +2380,27 @@ void CBlockHeader::SetAuxPow(CSerializedAuxPow* pow)
 // Josh: auxpow is a CSerializedAuxPow, must launder it via constructor to become a real CAuxPow
 bool CBlockHeader::CheckProofOfWork(int nHeight) const
 {
-	int algo = GetAlgo();
-    if (nHeight >= GetAuxPowStartBlock())
-    {
-        // Prevent same work from being submitted twice:
-        // - this block must have our chain ID
-        // - parent block must not have the same chain ID (see CAuxPow::Check)
-        // - index of this chain in chain merkle tree must be pre-determined (see CAuxPow::Check)
-        if (nHeight != INT_MAX && GetChainID() != AUXPOW_CHAIN_ID)
-            return error("CheckProofOfWork() : block (chainID=%d) does not have our chain ID (chainID=%d)", GetChainID(),AUXPOW_CHAIN_ID);
+    int algo = GetAlgo();
+    // Prevent same work from being submitted twice:
+    // - this block must have our chain ID
+    // - parent block must not have the same chain ID (see CAuxPow::Check)
+    // - index of this chain in chain merkle tree must be pre-determined (see CAuxPow::Check)
+    if (nHeight != INT_MAX && GetChainID() != AUXPOW_CHAIN_ID)
+        return error("CheckProofOfWork() : block (chainID=%d) does not have our chain ID (chainID=%d)", GetChainID(),AUXPOW_CHAIN_ID);
 
-        if (nVersion & BLOCK_VERSION_AUXPOW)
-        {
-	    CAuxPow	liveAuxPow(auxpow);
-	    
-            if (!(liveAuxPow.Check(GetHash(), GetChainID())))
-                return error("CheckProofOfWork() : AUX POW is not valid");
-            // Check proof of work matches claimed amount
-            if (!::CheckProofOfWork(liveAuxPow.GetParentBlockHash(algo), nBits, algo))
-                return error("CheckProofOfWork() : AUX proof of work failed");
-        }
-        else
-        {
-            // Check proof of work matches claimed amount
-            if (!::CheckProofOfWork(GetHash(algo), nBits, algo))
-                return error("CheckProofOfWork() : proof of work failed");
-        }
+    if (nVersion & BLOCK_VERSION_AUXPOW)
+    {
+        CAuxPow	liveAuxPow(auxpow);
+        
+        if (!(liveAuxPow.Check(GetHash(), GetChainID())))
+            return error("CheckProofOfWork() : AUX POW is not valid");
+        // Check proof of work matches claimed amount
+        if (!::CheckProofOfWork(liveAuxPow.GetParentBlockHash(algo), nBits, algo))
+            return error("CheckProofOfWork() : AUX proof of work failed");
     }
     else
     {
-        if (nVersion & BLOCK_VERSION_AUXPOW)
-        {
-            return error("CheckProofOfWork() : AUX POW is not allowed at this block");
-        }
-
-        // Check if proof of work marches claimed amount
+        // Check proof of work matches claimed amount
         if (!::CheckProofOfWork(GetHash(algo), nBits, algo))
             return error("CheckProofOfWork() : proof of work failed");
     }

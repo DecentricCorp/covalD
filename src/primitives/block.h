@@ -22,18 +22,9 @@ static const int BLOCK_VERSION_AUXPOW = (1 << 8);
 static const int BLOCK_VERSION_CHAIN_START = (1 << 16);
 static const int BLOCK_VERSION_CHAIN_END = (1 << 30);
 
-// Josh: Arbitrary choosing 0x0082 ('R') for Ribbitcoin
-// Josh TESTME: Will this work with the blockchain we have so far?
-// Might need to accept both, at least until a certain block height is reached (i.e. all miners updated)!
+// This could really be 1.  The auxpow hash from all other merge-mined chains
+// identify those chains, there is no need for an additional identifier.
 static const int AUXPOW_CHAIN_ID = 0x0082;
-
-// Josh FUTURE: Block 200000 is arbitrary and gives us quite some time to get it working
-// Once AuxPow is launched in mainstream Ribbitcoin, set this properly,
-// but it should still be a high number, to prevent AuxPow from being honored in early blocks.
-// This protects our early blockchain (with very weak POW) from getting clobbered (see Coiledcoin)
-static const int AUXPOW_START_MAINNET = 200000;
-static const int AUXPOW_START_TESTNET = 1;
-
 
 /** The maximum allowed size for a serialized block, in bytes (network rule) */
 static const unsigned int MAX_BLOCK_SIZE = 1000000;
