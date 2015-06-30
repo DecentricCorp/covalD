@@ -25,7 +25,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 		LogPrintf("Genesis Block Difficulty");
         return nProofOfWorkLimit;
 	}
-	const CBlockIndex* pindexPrevAlgo = GetLastBlockIndexForAlgo(pindexLast, algo);
+	const CBlockIndex* pindexPrevAlgo = GetLastBlockIndex(pindexLast, algo);
     if (pindexPrevAlgo == NULL){
 		LogPrintf("pindexPrevAlgo == NULL for Algo %i, is % i\n", algo, nProofOfWorkLimit);
         return nProofOfWorkLimit;

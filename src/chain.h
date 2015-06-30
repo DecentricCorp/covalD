@@ -287,7 +287,6 @@ public:
 };
 
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, int algo);
-const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, int algo);
 
 /** Used to marshal pointers into hashes for db storage. */
 class CDiskBlockIndex : public CBlockIndex

@@ -65,14 +65,3 @@ const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, int algo)
     return pindex;
 }
 
-const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, int algo)
-{
-    for (;;)
-    {
-        if (!pindex)
-            return NULL;
-        if (pindex->GetAlgo() == algo)
-            return pindex;
-        pindex = pindex->pprev;
-    }
-}
