@@ -103,26 +103,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo)
         pblock->nVersion = GetArg("-blockversion", pblock->nVersion);
 
     pblock->nVersion = BLOCK_VERSION_DEFAULT;
-    switch (algo)
-    {
-        case ALGO_SHA256D:
-            break;
-        case ALGO_SCRYPT:
-            pblock->nVersion |= BLOCK_VERSION_SCRYPT;
-            break;
-//        case ALGO_GROESTL:
-//            pblock->nVersion |= BLOCK_VERSION_GROESTL;
-//            break;
-//        case ALGO_SKEIN:
-//            pblock->nVersion |= BLOCK_VERSION_SKEIN;
-//            break;
-//        case ALGO_QUBIT:
-//            pblock->nVersion |= BLOCK_VERSION_QUBIT;
-//            break;
-        default:
-            error("CreateNewBlock: bad algo");
-            return NULL;
-    }
+    SetAlgo(pblock->nVersion, algo);
     // Create coinbase tx
     CMutableTransaction txNew;
     txNew.vin.resize(1);

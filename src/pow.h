@@ -26,35 +26,26 @@ enum {
 //    ALGO_QUBIT   = 4,
     NUM_ALGOS };
 
-enum // FIXME merge this with auxpow fields
-{
-    // primary version
-    BLOCK_VERSION_DEFAULT        = 2,
-
-    // algo
-    BLOCK_VERSION_ALGO           = (7 << 9),
-    BLOCK_VERSION_SCRYPT         = (1 << 9),
-//    BLOCK_VERSION_GROESTL        = (2 << 9),
-//    BLOCK_VERSION_SKEIN          = (3 << 9),
-//    BLOCK_VERSION_QUBIT          = (4 << 9),
-};
+#define BLOCK_VERSION_MASK         0x000000ff // fix on main.cpp line 1949
+#define BLOCK_VERSION(nVersion)         (nVersion & BLOCK_VERSION_MASK)
+#define BLOCK_VERSION_AUXPOW_MASK  0x00000100 // 1 bit   // called, confusingly, BLOCK_VERSION_AUXPOW
+#define BLOCK_VERSION_AUXPOW(nVersion)  ((nVersion & BLOCK_VERSION_AUXPOW_MASK) >> 8)
+#define BLOCK_VERSION_ALGO_MASK    0x00000e00 // 7 bits  
+#define BLOCK_VERSION_ALGO_START_BIT   9
+#define BLOCK_VERSION_ALGO(nVersion)    ((nVersion & BLOCK_VERSION_ALGO_MASK) >> 9)
+#define BLOCK_VERSION_UNUSED_MASK  0x1000f000 // 5 unused bits -- could make 256 algos
+#define BLOCK_VERSION_CHAINID_MASK 0xefff0000 // bits 16-30
+#define BLOCK_VERSION_CHAINID(nVersion) ((nVersion & BLOCK_VERSION_CHAINID_MASK) >> 16)
+// high (sign) bit unused for the sake of bastards that confuse signed and unsigned.
 
 inline int GetAlgo(int nVersion)
 {
-    switch (nVersion & BLOCK_VERSION_ALGO)
-    {
-        case 0:
-            return ALGO_SHA256D;
-        case BLOCK_VERSION_SCRYPT:
-            return ALGO_SCRYPT;
-//        case BLOCK_VERSION_GROESTL:
-//            return ALGO_GROESTL;
-//        case BLOCK_VERSION_SKEIN:
-//            return ALGO_SKEIN;
-//        case BLOCK_VERSION_QUBIT:
-//            return ALGO_QUBIT;
-    }
-    return ALGO_SHA256D;
+    return BLOCK_VERSION_ALGO(nVersion);
+}
+
+inline void SetAlgo(int& nVersion, int algo)
+{
+    nVersion |= (algo << BLOCK_VERSION_ALGO_START_BIT);
 }
 
 inline std::string GetAlgoName(int Algo)
