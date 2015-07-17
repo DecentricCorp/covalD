@@ -160,8 +160,8 @@ public:
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
         base58Prefixes[SECRET_KEY]     = list_of(61 + 128); // The vanitygen convention appears to be pubkey + 128
-        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
-        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
+        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x37)(0x64)(0x72)(0x4C);
+        base58Prefixes[EXT_SECRET_KEY] = list_of(0x37)(0x64)(0x26)(0x86);
 
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
@@ -223,8 +223,8 @@ public:
         base58Prefixes[PUBKEY_ADDRESS] = list_of(65); // Starts with T
         base58Prefixes[SCRIPT_ADDRESS] = list_of(127); // Starts with t
         base58Prefixes[SECRET_KEY]     = list_of(65 + 128); // The vanitygen convention appears to be pubkey + 128
-        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
-        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
+        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x37)(0x65)(0xF6)(0x93);
+        base58Prefixes[EXT_SECRET_KEY] = list_of(0x37)(0x65)(0x3D)(0xE2);
 
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 
