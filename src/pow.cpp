@@ -34,7 +34,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     const CBlockIndex   *BlockLastSolved                 = pindexPrevAlgo;
     const CBlockIndex   *BlockReading                    = pindexPrevAlgo;
 
-	int					 AlgoCounter					 = 0;
+	unsigned int		 AlgoCounter					 = 0;
     uint64_t             PastBlocksMass                  = 0;
     int64_t              PastRateActualSeconds           = 0;
     int64_t              PastRateTargetSeconds           = 0;
