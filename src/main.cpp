@@ -2620,7 +2620,6 @@ bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, CBloc
         pindexPrev = (*mi).second;
         if (pindexPrev->nStatus & BLOCK_FAILED_MASK)
             return state.DoS(100, error("%s : prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
-=======
         int nHeight = pindexPrev->nHeight+1;
 
         // Check proof of work
