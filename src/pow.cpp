@@ -18,8 +18,9 @@
 unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	
 	unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
+	if (fDebug){
     LogPrintf("Proof Of Work Limit For Algo %i, is % i\n", algo, nProofOfWorkLimit);
-
+    }
     // Genesis block
     if (pindexLast == NULL){
 		LogPrintf("Genesis Block Difficulty");
