@@ -126,14 +126,14 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     if (bnNew > Params().ProofOfWorkLimit(algo)) { bnNew = Params().ProofOfWorkLimit(algo); }
 
     // debug print
-
+       if (fDebug){
         LogPrintf("Franko Multi Algo Gravity Well\n");
     
     LogPrintf("PastRateAdjustmentRatio =  %g    PastRateTargetSeconds = %d    PastRateActualSeconds = %d\n",
                PastRateAdjustmentRatio, PastRateTargetSeconds, PastRateActualSeconds);
     LogPrintf("Before: %08x  %s\n", BlockLastSolved->nBits, uint256().SetCompact(BlockLastSolved->nBits).ToString());
     LogPrintf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
-
+    }
     return bnNew.GetCompact();
 }
 
