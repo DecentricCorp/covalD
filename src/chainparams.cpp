@@ -8,7 +8,6 @@
 #include "random.h"
 #include "util.h"
 #include "utilstrencodings.h"
-#include "interest.h"
 
 #include <assert.h>
 
