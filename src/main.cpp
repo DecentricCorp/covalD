@@ -1247,9 +1247,9 @@ CAmount GetBlockValue(int nHeight, const CAmount& nFees)
         nSubsidy = Params().Airdrop() * COIN;
     }
     
-    //if(nHeight > 1){
-    //    nSubsidy = 0;
-    //}
+    if(nHeight >= 402070){
+       nSubsidy = 190 * COIN;
+    }
     // later adjust the reward based on minted coins
 
     return nSubsidy + nFees;
