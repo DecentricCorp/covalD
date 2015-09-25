@@ -18,8 +18,9 @@
 unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	
 	unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
+	if (fDebug){
     LogPrintf("Proof Of Work Limit For Algo %i, is % i\n", algo, nProofOfWorkLimit);
-
+    }
     // Genesis block
     if (pindexLast == NULL){
 		LogPrintf("Genesis Block Difficulty");
@@ -34,7 +35,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     const CBlockIndex   *BlockLastSolved                 = pindexPrevAlgo;
     const CBlockIndex   *BlockReading                    = pindexPrevAlgo;
 
-	int					 AlgoCounter					 = 0;
+	unsigned int		 AlgoCounter					 = 0;
     uint64_t             PastBlocksMass                  = 0;
     int64_t              PastRateActualSeconds           = 0;
     int64_t              PastRateTargetSeconds           = 0;
@@ -126,14 +127,14 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     if (bnNew > Params().ProofOfWorkLimit(algo)) { bnNew = Params().ProofOfWorkLimit(algo); }
 
     // debug print
-
+       if (fDebug){
         LogPrintf("Franko Multi Algo Gravity Well\n");
     
     LogPrintf("PastRateAdjustmentRatio =  %g    PastRateTargetSeconds = %d    PastRateActualSeconds = %d\n",
                PastRateAdjustmentRatio, PastRateTargetSeconds, PastRateActualSeconds);
     LogPrintf("Before: %08x  %s\n", BlockLastSolved->nBits, uint256().SetCompact(BlockLastSolved->nBits).ToString());
     LogPrintf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
-
+    }
     return bnNew.GetCompact();
 }
 

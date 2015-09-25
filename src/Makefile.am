@@ -96,7 +96,6 @@ BITCOIN_CORE_H = \
   ecwrapper.h \
   hash.h \
   init.h \
-  interest.h \
   key.h \
   keystore.h \
   leveldbwrapper.h \
@@ -168,7 +167,6 @@ libbitcoin_server_a_SOURCES = \
   chain.cpp \
   checkpoints.cpp \
   init.cpp \
-  interest.cpp \
   leveldbwrapper.cpp \
   main.cpp \
   merkleblock.cpp \
@@ -249,7 +247,6 @@ libbitcoin_common_a_SOURCES = \
   eccryptoverify.cpp \
   ecwrapper.cpp \
   hash.cpp \
-  interest.cpp \
   key.cpp \
   keystore.cpp \
   netbase.cpp \
