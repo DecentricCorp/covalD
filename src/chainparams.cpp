@@ -155,7 +155,7 @@ public:
         
         // Josh FUTURE: Use real hostnames here
         // IP addresses should already be provided by chainparamsseeds.h
-        vSeeds.push_back(CDNSSeedData("162.243.230.181", "162.243.230.181"));
+        vSeeds.push_back(CDNSSeedData("104.236.26.26", "104.131.226.147"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(61); // Starts with R
         base58Prefixes[SCRIPT_ADDRESS] = list_of(123); // Starts with r
