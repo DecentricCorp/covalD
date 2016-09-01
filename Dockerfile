@@ -12,7 +12,7 @@ RUN apt-get -y install -y libdb++-dev
 RUN apt-get install git -y 
 WORKDIR ~/
 
-RUN git clone https://github.com/synrg-labs/ribbitcoin.git
+RUN git clone https://github.com/synrg-labs/covald.git
 
 RUN ./ribbitcoin/autogen.sh
 RUN cd ribbitcoin && ./configure --with-incompatible-bdb --without-qt
