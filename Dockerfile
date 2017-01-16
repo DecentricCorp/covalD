@@ -12,24 +12,24 @@ RUN apt-get -y install -y libdb++-dev
 RUN apt-get install git -y 
 WORKDIR ~/
 
-RUN git clone https://github.com/synrg-labs/covald.git
+RUN git clone https://github.com/synrg-labs/covalD.git
 
-RUN ./ribbitcoin/autogen.sh
-RUN cd ribbitcoin && ./configure --with-incompatible-bdb --without-qt
-RUN cd ribbitcoin && make
+RUN cd covalD && ./autogen.sh
+RUN cd covalD && ./configure --with-incompatible-bdb --without-qt
+RUN cd covalD && make
 
 RUN apt-get build-dep wget -y
 RUN apt-get install wget
 RUN wget http://104.236.26.26:8080/chain.tar.gz
-
 #RUN mkdir /root/ribbitcoin/
 RUN tar -xvf chain.tar.gz -C /root/
 COPY ribbitcoin.conf /root/ribbitcoin/ribbitcoin.conf
 RUN mv /root/ribbitcoin/ /root/.ribbitcoin/
 
 COPY run.sh run.sh
-RUN cd ribbitcoin/src && cp ribbitcoind /usr/local/bin
-RUN cd ribbitcoin/src && cp ribbitcoin-cli /usr/local/bin
+RUN ls -al
+RUN cd covalD/src && cp ribbitcoind /usr/local/bin
+RUN cd covalD/src && cp ribbitcoin-cli /usr/local/bin
 RUN chmod u+x run.sh
 
 EXPOSE 3763 3764
